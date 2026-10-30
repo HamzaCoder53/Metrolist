@@ -251,6 +251,10 @@ class Downloads(context: Context, private val settings: Settings) {
                     videoId = mediaId,
                     audioQuality = settings.audioQuality,
                     connectivityManager = connectivityManager,
+                    contentHints =
+                        com.metrolist.innertubex.extraction.ContentHints(
+                            isUploaded = (appContext as io.github.hamzacoder53.wavelet.WaveletApplication).accountLibrary.isUploaded(mediaId),
+                        ),
                     allowBoundedRange = false,
                 )
             }.getOrElse { throw IOException("Could not resolve stream for $mediaId", it) }

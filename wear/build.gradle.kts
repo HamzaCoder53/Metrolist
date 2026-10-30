@@ -47,8 +47,8 @@ android {
         applicationId = "io.github.hamzacoder53.wavelet"
         minSdk = 30
         targetSdk = 36
-        versionCode = 8
-        versionName = "0.4.2"
+        versionCode = 9
+        versionName = "0.4.3"
         buildConfigField("String", "OAUTH_CLIENT_ID", "\"${oauthClient.getProperty("clientId", "")}\"")
         buildConfigField("String", "OAUTH_CLIENT_SECRET", "\"${oauthClient.getProperty("clientSecret", "")}\"")
     }

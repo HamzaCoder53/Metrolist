@@ -11,6 +11,7 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import com.metrolist.innertube.YouTube
+import com.metrolist.innertubex.extraction.ContentHints
 import com.metrolist.music.playback.CachedStreamUrl
 import com.metrolist.music.playback.StreamUrlCache
 import com.metrolist.music.playback.withResolvedStream
@@ -64,6 +65,7 @@ class YouTubeDataSource(context: Context) {
                         videoId = mediaId,
                         audioQuality = appContext.settings.audioQuality,
                         connectivityManager = connectivityManager,
+                        contentHints = ContentHints(isUploaded = (appContext as WaveletApplication).accountLibrary.isUploaded(mediaId)),
                     )
                 }.getOrElse { throw IOException("Could not resolve stream for $mediaId", it) }
             Timber.d("Resolved %s via %s (itag %d)", mediaId, playback.streamClient, playback.format.itag)

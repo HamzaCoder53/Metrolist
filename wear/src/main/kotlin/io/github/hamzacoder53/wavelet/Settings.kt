@@ -73,6 +73,11 @@ class Settings(context: Context) {
     fun unregisterListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener) =
         prefs.unregisterOnSharedPreferenceChangeListener(listener)
 
+    /** Show (and sync) songs the user uploaded to YouTube Music; needs a full-account sign-in. */
+    var showUploads: Boolean
+        get() = prefs.getBoolean(KEY_SHOW_UPLOADS, false)
+        set(value) = prefs.edit { putBoolean(KEY_SHOW_UPLOADS, value) }
+
     var showLyrics: Boolean
         get() = prefs.getBoolean(KEY_SHOW_LYRICS, true)
         set(value) = prefs.edit { putBoolean(KEY_SHOW_LYRICS, value) }
@@ -103,6 +108,7 @@ class Settings(context: Context) {
         const val KEY_AUTOPLAY = "autoplay"
         const val KEY_NORMALIZE = "normalize_volume"
         const val KEY_SKIP_SILENCE = "skip_silence"
+        const val KEY_SHOW_UPLOADS = "show_uploads"
     }
 }
 

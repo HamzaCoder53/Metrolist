@@ -71,6 +71,13 @@
     <string name="storage_breakdown">Downloads %1$s · Cache %2$s · %3$s free</string>
     <string name="account">Account</string>
     <string name="sign_in_explainer">Sign in to sync your liked songs and playlists.</string>
+    <string name="playlists_sign_in">Sign in to see your playlists.</string>
+    <string name="no_playlists">No playlists yet</string>
+    <string name="uploaded_music">Uploaded music</string>
+    <string name="show_uploaded_music">Show uploaded music</string>
+    <string name="uploads_need_full_sign_in">Uploaded music needs \"Sign in on phone\" or \"Sign in on watch\".</string>
+    <string name="no_uploads">No uploaded songs</string>
+    <string name="recommended">Recommended</string>
     <string name="sign_in_on_phone">Sign in on phone</string>
     <string name="sign_in_on_phone_detail">Full account · uses the Wavelet phone app</string>
     <string name="phone_sign_in_opening">Opening Wavelet on your phone…</string>

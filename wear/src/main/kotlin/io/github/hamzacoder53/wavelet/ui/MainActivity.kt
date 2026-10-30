@@ -25,6 +25,7 @@ import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import io.github.hamzacoder53.wavelet.ui.account.AccountScreen
 import io.github.hamzacoder53.wavelet.ui.account.CodeSignInScreen
 import io.github.hamzacoder53.wavelet.ui.account.PhoneSignInScreen
+import io.github.hamzacoder53.wavelet.ui.account.PlaylistsScreen
 import io.github.hamzacoder53.wavelet.ui.account.WebSignInScreen
 import io.github.hamzacoder53.wavelet.ui.account.YourLibraryScreen
 
@@ -44,6 +45,7 @@ object Routes {
     const val CODE_SIGN_IN = "sign_in/code"
     const val YOUR_LIBRARY = "your_library"
     const val SLEEP_TIMER = "sleep_timer"
+    const val PLAYLISTS = "playlists"
     const val LIBRARY_COLLECTION = "library/{collectionId}"
 
     fun collection(kind: String, id: String) = "collection/$kind/${Uri.encode(id)}"
@@ -116,6 +118,8 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
                         nowPlaying = playerState.mediaItem,
                         onSearch = { navController.navigate(Routes.SEARCH) },
                         onNowPlaying = { navController.navigate(Routes.NOW_PLAYING) },
+                        onPlaylists = { navController.navigate(Routes.PLAYLISTS) },
+                        onOpenCollection = { kind, id -> navController.navigate(Routes.collection(kind, id)) },
                         onDownloads = { navController.navigate(Routes.LIBRARY) },
                         onAccount = { navController.navigate(Routes.ACCOUNT) },
                         onSleepTimer = { navController.navigate(Routes.SLEEP_TIMER) },
@@ -127,6 +131,17 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
                     )
                 }
                 composable(Routes.SLEEP_TIMER) { SleepTimerScreen() }
+                composable(Routes.PLAYLISTS) {
+                    PlaylistsScreen(
+                        onPlay = { songs, index ->
+                            if (player.playSongs(songs, index)) navController.navigate(Routes.NOW_PLAYING)
+                        },
+                        onOpenPlaylist = { id ->
+                            navController.navigate(Routes.collection(CollectionViewModel.KIND_ACCOUNT_PLAYLIST, id))
+                        },
+                        onSignIn = { navController.navigate(Routes.ACCOUNT) },
+                    )
+                }
                 val playSongs: (List<com.metrolist.innertube.models.SongItem>, Int) -> Unit = { songs, index ->
                     if (player.playSongs(songs, index)) navController.navigate(Routes.NOW_PLAYING)
                 }

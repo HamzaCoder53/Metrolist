@@ -92,8 +92,13 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 
 ## Features (Phase 4: watch extras)
 
-- **Quick picks on Home:** suggestions from YouTube Music's home page. They're personalised
-  when you're signed in on the watch, and hidden while offline.
+- **Recommended music on Home:** up to five of YouTube Music's home sections, such as Quick
+  picks, mixes, and recommended albums and playlists. Songs play from their section; albums and
+  playlists open their page. They're personalised with a full-account sign-in, and hidden while
+  offline.
+- **Playlists** (Home → Playlists): your Liked songs and playlists. The **Show uploaded music**
+  switch adds the songs you've uploaded to YouTube Music. Uploads need **Sign in on phone** or
+  **Sign in on watch**, because the YouTube Data API behind code sign-in can't see them.
 - **Autoplay:** when the last song in your queue starts, Wavelet adds about 15 similar songs
   (YouTube Music's "up next" for that song). Turn it off in Settings → Playback.
 - **Volume normalization:** turns loud songs down to YouTube's reference level, using each

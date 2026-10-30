@@ -15,7 +15,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
-import androidx.wear.compose.foundation.lazy.itemsIndexed
+import androidx.wear.compose.foundation.lazy.items
+import com.metrolist.innertube.models.AlbumItem
+import com.metrolist.innertube.models.PlaylistItem
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.FilledTonalButton
@@ -34,15 +36,17 @@ fun HomeScreen(
     nowPlaying: MediaItem?,
     onSearch: () -> Unit,
     onNowPlaying: () -> Unit,
+    onPlaylists: () -> Unit,
     onDownloads: () -> Unit,
     onAccount: () -> Unit,
     onSleepTimer: () -> Unit,
     onSettings: () -> Unit,
     onAbout: () -> Unit,
     onPlay: (List<SongItem>, Int) -> Unit,
+    onOpenCollection: (kind: String, id: String) -> Unit,
     viewModel: HomeViewModel = viewModel(),
 ) {
-    val suggestions by viewModel.suggestions.collectAsState()
+    val sections by viewModel.sections.collectAsState()
     val sleepTimer = (LocalContext.current.applicationContext as WaveletApplication).sleepTimer
     val timerState by sleepTimer.state.collectAsState()
     val now = remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -83,6 +87,14 @@ fun HomeScreen(
             }
             item {
                 FilledTonalButton(
+                    onClick = onPlaylists,
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = { Icon(painterResource(R.drawable.ic_playlist), contentDescription = null) },
+                    label = { Text(stringResource(R.string.playlists)) },
+                )
+            }
+            item {
+                FilledTonalButton(
                     onClick = onDownloads,
                     modifier = Modifier.fillMaxWidth(),
                     icon = { Icon(painterResource(R.drawable.ic_library), contentDescription = null) },
@@ -106,15 +118,36 @@ fun HomeScreen(
                     secondaryLabel = { Text(sleepTimerSummary(timerState, now.longValue)) },
                 )
             }
-            suggestions?.let { picks ->
-                item { ListHeader { Text(picks.title, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
-                itemsIndexed(picks.songs, key = { _, song -> "q:" + song.id }) { index, song ->
-                    ItemButton(
-                        title = song.title,
-                        subtitle = song.artists.joinToString { it.name },
-                        thumbnail = song.thumbnail,
-                        onClick = { onPlay(picks.songs, index) },
-                    )
+            // Recommended music: each YouTube Music home section with its songs, albums and playlists.
+            sections.forEachIndexed { sectionIndex, section ->
+                item(key = "s:$sectionIndex") {
+                    ListHeader { Text(section.title, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                }
+                items(section.items, key = { "s:$sectionIndex:" + it.id }) { item ->
+                    when (item) {
+                        is SongItem ->
+                            ItemButton(
+                                title = item.title,
+                                subtitle = item.artists.joinToString { it.name },
+                                thumbnail = item.thumbnail,
+                                onClick = { onPlay(section.songs, section.songs.indexOf(item)) },
+                            )
+                        is AlbumItem ->
+                            ItemButton(
+                                title = item.title,
+                                subtitle = item.artists?.joinToString { it.name },
+                                thumbnail = item.thumbnail,
+                                onClick = { onOpenCollection(CollectionViewModel.KIND_ALBUM, item.browseId) },
+                            )
+                        is PlaylistItem ->
+                            ItemButton(
+                                title = item.title,
+                                subtitle = item.author?.name,
+                                thumbnail = item.thumbnail,
+                                onClick = { onOpenCollection(CollectionViewModel.KIND_PLAYLIST, item.id) },
+                            )
+                        else -> Unit
+                    }
                 }
             }
             item {

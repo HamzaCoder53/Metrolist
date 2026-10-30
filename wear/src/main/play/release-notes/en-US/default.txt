@@ -1,1 +1,1 @@
-Sign in on phone: use the Wavelet phone app to sign in and send your full YouTube Music account to the watch. Expired sign-ins are now shown with a "Sign in again" button.
+Recommended music on Home, a Playlists button with your liked songs and playlists, and an option to show your uploaded music.
