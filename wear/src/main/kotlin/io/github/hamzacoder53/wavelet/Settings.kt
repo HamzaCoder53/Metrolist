@@ -53,6 +53,26 @@ class Settings(context: Context) {
         get() = prefs.getString(KEY_REFRESH_TOKEN, null)
         set(value) = prefs.edit { putString(KEY_REFRESH_TOKEN, value) }
 
+    /** When the queue runs out, keep playing similar songs (YouTube Music radio). */
+    var autoplay: Boolean
+        get() = prefs.getBoolean(KEY_AUTOPLAY, true)
+        set(value) = prefs.edit { putBoolean(KEY_AUTOPLAY, value) }
+
+    /** Even out loudness between songs using YouTube's per-track loudness value. */
+    var normalizeVolume: Boolean
+        get() = prefs.getBoolean(KEY_NORMALIZE, true)
+        set(value) = prefs.edit { putBoolean(KEY_NORMALIZE, value) }
+
+    var skipSilence: Boolean
+        get() = prefs.getBoolean(KEY_SKIP_SILENCE, false)
+        set(value) = prefs.edit { putBoolean(KEY_SKIP_SILENCE, value) }
+
+    fun registerListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener) =
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+
+    fun unregisterListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener) =
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
+
     var showLyrics: Boolean
         get() = prefs.getBoolean(KEY_SHOW_LYRICS, true)
         set(value) = prefs.edit { putBoolean(KEY_SHOW_LYRICS, value) }
@@ -67,7 +87,7 @@ class Settings(context: Context) {
         get() = prefs.getString(KEY_VISITOR_DATA, null)
         set(value) = prefs.edit { putString(KEY_VISITOR_DATA, value) }
 
-    private companion object {
+    companion object {
         const val KEY_AUDIO_QUALITY = "audio_quality"
         const val KEY_VISITOR_DATA = "visitor_data"
         const val KEY_WIFI_ONLY = "download_wifi_only"
@@ -80,6 +100,9 @@ class Settings(context: Context) {
         const val KEY_AUTH_USER = "auth_user"
         const val KEY_REFRESH_TOKEN = "oauth_refresh_token"
         const val KEY_SHOW_LYRICS = "show_lyrics"
+        const val KEY_AUTOPLAY = "autoplay"
+        const val KEY_NORMALIZE = "normalize_volume"
+        const val KEY_SKIP_SILENCE = "skip_silence"
     }
 }
 

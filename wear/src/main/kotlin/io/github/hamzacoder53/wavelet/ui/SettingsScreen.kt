@@ -40,6 +40,9 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
     var chargingOnly by remember { mutableStateOf(settings.downloadWhileChargingOnly) }
     var confirmClear by remember { mutableStateOf(false) }
     var showLyrics by remember { mutableStateOf(settings.showLyrics) }
+    var autoplay by remember { mutableStateOf(settings.autoplay) }
+    var normalize by remember { mutableStateOf(settings.normalizeVolume) }
+    var skipSilence by remember { mutableStateOf(settings.skipSilence) }
     // Re-read size and limit whenever the cached song list changes (after clearing, resizing or playing).
     val cachedSongs by listeningCache.songs.collectAsState()
     val cacheUsed = remember(cachedSongs) { listeningCache.usedBytes() }
@@ -71,6 +74,41 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
                         },
                     )
                 }
+            }
+
+            item { ListHeader { Text(stringResource(R.string.playback_section)) } }
+            item {
+                SwitchButton(
+                    checked = autoplay,
+                    onCheckedChange = {
+                        settings.autoplay = it
+                        autoplay = it
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.autoplay)) },
+                )
+            }
+            item {
+                SwitchButton(
+                    checked = normalize,
+                    onCheckedChange = {
+                        settings.normalizeVolume = it
+                        normalize = it
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.normalize_volume)) },
+                )
+            }
+            item {
+                SwitchButton(
+                    checked = skipSilence,
+                    onCheckedChange = {
+                        settings.skipSilence = it
+                        skipSilence = it
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.skip_silence)) },
+                )
             }
 
             item { ListHeader { Text(stringResource(R.string.lyrics)) } }

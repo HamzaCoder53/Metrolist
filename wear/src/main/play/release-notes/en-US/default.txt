@@ -1,1 +1,1 @@
-Account sign-in (on watch or with a code), liked songs and playlists, synced lyrics on Now Playing, a Tile and a watch-face complication.
+Quick picks on Home, autoplay of similar songs, volume normalization, skip silence and a sleep timer.

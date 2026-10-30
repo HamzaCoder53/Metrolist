@@ -97,4 +97,14 @@
     <string name="tile_description">Now playing and recent music</string>
     <string name="complication_label">Wavelet now playing</string>
     <string name="recent_music">Recent</string>
+    <string name="sleep_timer">Sleep timer</string>
+    <string name="minutes">%1$d minutes</string>
+    <string name="end_of_song">End of this song</string>
+    <string name="turn_off_timer">Turn off timer</string>
+    <string name="timer_off">Off</string>
+    <string name="pauses_in">Pauses in %1$d:%2$02d</string>
+    <string name="playback_section">Playback</string>
+    <string name="autoplay">Autoplay similar songs</string>
+    <string name="normalize_volume">Normalize volume</string>
+    <string name="skip_silence">Skip silence</string>
 </resources>

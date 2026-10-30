@@ -14,6 +14,8 @@ import io.github.hamzacoder53.wavelet.account.Account
 import io.github.hamzacoder53.wavelet.account.AccountLibrary
 import io.github.hamzacoder53.wavelet.playback.Downloads
 import io.github.hamzacoder53.wavelet.playback.ListeningCache
+import io.github.hamzacoder53.wavelet.playback.Loudness
+import io.github.hamzacoder53.wavelet.playback.SleepTimer
 import io.github.hamzacoder53.wavelet.playback.SyncedLyrics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,11 +42,16 @@ class WaveletApplication : Application(), SingletonImageLoader.Factory {
         private set
 
     val lyrics = SyncedLyrics()
+    val sleepTimer = SleepTimer()
+
+    lateinit var loudness: Loudness
+        private set
 
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         settings = Settings(this)
+        loudness = Loudness(this)
         downloads = Downloads(this, settings)
         listeningCache = ListeningCache(this, settings, downloads.databaseProvider)
         account = Account(this, settings)

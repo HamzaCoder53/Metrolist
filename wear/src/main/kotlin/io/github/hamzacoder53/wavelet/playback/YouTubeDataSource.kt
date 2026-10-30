@@ -15,6 +15,7 @@ import com.metrolist.music.playback.CachedStreamUrl
 import com.metrolist.music.playback.StreamUrlCache
 import com.metrolist.music.playback.withResolvedStream
 import com.metrolist.music.utils.InnerTubeXPlayer
+import io.github.hamzacoder53.wavelet.WaveletApplication
 import io.github.hamzacoder53.wavelet.settings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -66,6 +67,7 @@ class YouTubeDataSource(context: Context) {
                     )
                 }.getOrElse { throw IOException("Could not resolve stream for $mediaId", it) }
             Timber.d("Resolved %s via %s (itag %d)", mediaId, playback.streamClient, playback.format.itag)
+            (appContext as WaveletApplication).loudness.record(mediaId, playback.audioConfig?.loudnessDb)
 
             urlCache.put(
                 mediaId = mediaId,

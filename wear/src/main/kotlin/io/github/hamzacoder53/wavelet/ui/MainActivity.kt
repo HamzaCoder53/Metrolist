@@ -41,6 +41,7 @@ object Routes {
     const val WEB_SIGN_IN = "sign_in/web"
     const val CODE_SIGN_IN = "sign_in/code"
     const val YOUR_LIBRARY = "your_library"
+    const val SLEEP_TIMER = "sleep_timer"
     const val LIBRARY_COLLECTION = "library/{collectionId}"
 
     fun collection(kind: String, id: String) = "collection/$kind/${Uri.encode(id)}"
@@ -115,10 +116,15 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
                         onNowPlaying = { navController.navigate(Routes.NOW_PLAYING) },
                         onDownloads = { navController.navigate(Routes.LIBRARY) },
                         onAccount = { navController.navigate(Routes.ACCOUNT) },
+                        onSleepTimer = { navController.navigate(Routes.SLEEP_TIMER) },
                         onSettings = { navController.navigate(Routes.SETTINGS) },
                         onAbout = { navController.navigate(Routes.ABOUT) },
+                        onPlay = { songs, index ->
+                            if (player.playSongs(songs, index)) navController.navigate(Routes.NOW_PLAYING)
+                        },
                     )
                 }
+                composable(Routes.SLEEP_TIMER) { SleepTimerScreen() }
                 val playSongs: (List<com.metrolist.innertube.models.SongItem>, Int) -> Unit = { songs, index ->
                     if (player.playSongs(songs, index)) navController.navigate(Routes.NOW_PLAYING)
                 }

@@ -254,6 +254,7 @@ class Downloads(context: Context, private val settings: Settings) {
                     allowBoundedRange = false,
                 )
             }.getOrElse { throw IOException("Could not resolve stream for $mediaId", it) }
+        (appContext as io.github.hamzacoder53.wavelet.WaveletApplication).loudness.record(mediaId, playback.audioConfig?.loudnessDb)
         val contentLength = playback.format.contentLength?.takeIf { it > 0 } ?: probeContentLength(playback.streamUrl, playback.streamHeaders)
         val url =
             if (contentLength != null && "&range=" !in playback.streamUrl) {

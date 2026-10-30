@@ -79,6 +79,19 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 - **Complication:** shows the current song on any watch face that supports text
   complications. Tap it to open Wavelet.
 
+## Features (Phase 4: watch extras)
+
+- **Quick picks on Home:** suggestions from YouTube Music's home page. They're personalised
+  when you're signed in on the watch, and hidden while offline.
+- **Autoplay:** when the last song in your queue starts, Wavelet adds about 15 similar songs
+  (YouTube Music's "up next" for that song). Turn it off in Settings → Playback.
+- **Volume normalization:** turns loud songs down to YouTube's reference level, using each
+  song's loudness value. That value is saved, so it also works for cached and downloaded
+  songs offline. Quiet songs aren't boosted. Turn it off in Settings → Playback.
+- **Skip silence:** off by default; turn it on in Settings → Playback.
+- **Sleep timer** (Home → Sleep timer): 15, 30, 45, 60 or 90 minutes, or the end of the
+  current song. The time left shows on the Home row.
+
 ### Setting up "Sign in with a code"
 
 1. In Google Cloud Console, open a project and enable the **YouTube Data API v3**.
