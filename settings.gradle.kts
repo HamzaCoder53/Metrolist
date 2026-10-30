@@ -41,4 +41,5 @@ rootProject.name = "Metrolist"
 include(":app")
 include(":innertube")
 include(":streaming")
+include(":lyrics")
 include(":wear")

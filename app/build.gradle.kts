@@ -301,6 +301,7 @@ dependencies {
 
     implementation(project(":innertube"))
     implementation(project(":streaming"))
+    implementation(project(":lyrics"))
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
