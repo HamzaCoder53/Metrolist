@@ -47,6 +47,16 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
   - **Only while charging**.
   - Downloads pause and resume on their own.
 - Downloaded songs play with no connection at all, including their artwork.
+- **Listening cache** (like Metrolist's player cache):
+  - Songs you stream are saved while they play, so you can replay them offline without
+    downloading. They're listed under **Recently played (offline)** in Downloads.
+  - Set the size in Settings → Listening cache → **Cache size**. Drag the slider, tap −/+,
+    or turn the crown: Off, 100 MB, 250 MB, 500 MB (default), 1 GB, 2 GB, 4 GB, 8 GB,
+    Unlimited.
+  - The least recently played songs are removed first.
+  - Even on Unlimited, at least 500 MB of the watch's storage is always left free.
+  - **Clear cache** is just below the size row in Settings.
+  - Downloads are kept separately and never removed by the cache.
 
 ## Build
 

@@ -1,16 +1,23 @@
 package io.github.hamzacoder53.wavelet.ui
 
+import android.text.format.Formatter
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.material3.AlertDialog
+import androidx.wear.compose.material3.AlertDialogDefaults
+import androidx.wear.compose.material3.FilledTonalButton
+import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.RadioButton
 import androidx.wear.compose.material3.ScreenScaffold
@@ -22,13 +29,20 @@ import io.github.hamzacoder53.wavelet.WaveletApplication
 import io.github.hamzacoder53.wavelet.settings
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onOpenCacheSize: () -> Unit) {
     val context = LocalContext.current
     val settings = context.settings
-    val downloads = (context.applicationContext as WaveletApplication).downloads
+    val app = context.applicationContext as WaveletApplication
+    val downloads = app.downloads
+    val listeningCache = app.listeningCache
     var quality by remember { mutableStateOf(settings.audioQuality) }
     var wifiOnly by remember { mutableStateOf(settings.downloadOnWifiOnly) }
     var chargingOnly by remember { mutableStateOf(settings.downloadWhileChargingOnly) }
+    var confirmClear by remember { mutableStateOf(false) }
+    // Re-read size and limit whenever the cached song list changes (after clearing, resizing or playing).
+    val cachedSongs by listeningCache.songs.collectAsState()
+    val cacheUsed = remember(cachedSongs) { listeningCache.usedBytes() }
+    val cacheLimit = remember(cachedSongs) { settings.listeningCacheMb }
 
     val listState = rememberTransformingLazyColumnState()
     ScreenScaffold(scrollState = listState) { contentPadding ->
@@ -83,6 +97,43 @@ fun SettingsScreen() {
                     label = { Text(stringResource(R.string.charging_only)) },
                 )
             }
+
+            item { ListHeader { Text(stringResource(R.string.listening_cache)) } }
+            item { CenteredText(stringResource(R.string.listening_cache_info)) }
+            item {
+                FilledTonalButton(
+                    onClick = onOpenCacheSize,
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = { Icon(painterResource(R.drawable.ic_settings), contentDescription = null) },
+                    label = { Text("${stringResource(R.string.cache_size)}: ${sizeLabel(context, cacheLimit)}") },
+                    secondaryLabel = {
+                        Text(stringResource(R.string.cache_used, Formatter.formatShortFileSize(context, cacheUsed)))
+                    },
+                )
+            }
+            item {
+                FilledTonalButton(
+                    onClick = { confirmClear = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = { Icon(painterResource(R.drawable.ic_delete), contentDescription = null) },
+                    label = { Text(stringResource(R.string.clear_cache)) },
+                )
+            }
         }
     }
+
+    AlertDialog(
+        visible = confirmClear,
+        onDismissRequest = { confirmClear = false },
+        title = { Text(stringResource(R.string.clear_cache_title)) },
+        confirmButton = {
+            AlertDialogDefaults.ConfirmButton(
+                onClick = {
+                    listeningCache.clear()
+                    confirmClear = false
+                },
+            )
+        },
+        dismissButton = { AlertDialogDefaults.DismissButton(onClick = { confirmClear = false }) },
+    )
 }

@@ -33,15 +33,22 @@ class YouTubeDataSource(context: Context) {
     val urlCache = StreamUrlCache(maxEntries = 100)
 
     /**
-     * Downloaded songs are read straight from [downloadCache] (read-only, keyed by media id), so they
-     * play offline without resolving a stream. Anything not downloaded falls through to the resolver.
+     * Read order: [downloadCache] (read-only), then [listeningCache] (filled while streaming), then
+     * the stream resolver. Both caches are keyed by media id, so cached songs play offline without
+     * resolving a stream.
      */
-    fun factory(downloadCache: Cache): DataSource.Factory =
+    fun factory(downloadCache: Cache, listeningCache: ListeningCache): DataSource.Factory =
         CacheDataSource.Factory()
             .setCache(downloadCache)
-            .setUpstreamDataSourceFactory(resolvingFactory())
             .setCacheWriteDataSinkFactory(null)
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+            .setUpstreamDataSourceFactory(
+                CacheDataSource.Factory()
+                    .setCache(listeningCache.cache)
+                    .setCacheWriteDataSinkFactory(listeningCache.sinkFactory)
+                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+                    .setUpstreamDataSourceFactory(resolvingFactory()),
+            )
 
     private fun resolvingFactory(): DataSource.Factory {
         val http = OkHttpDataSource.Factory(OkHttpClient.Builder().proxy(YouTube.proxy).build())

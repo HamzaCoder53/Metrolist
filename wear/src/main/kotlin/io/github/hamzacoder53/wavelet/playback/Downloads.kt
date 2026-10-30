@@ -84,7 +84,8 @@ class Downloads(context: Context, private val settings: Settings) {
     private val connectivityManager = appContext.getSystemService(ConnectivityManager::class.java)
     private val http = OkHttpClient.Builder().proxy(YouTube.proxy).build()
     private val artworkDir = File(appContext.filesDir, "artwork").apply { mkdirs() }
-    private val databaseProvider = StandaloneDatabaseProvider(appContext)
+    /** Shared with the listening cache; Media3 keys each cache's tables by its directory. */
+    val databaseProvider = StandaloneDatabaseProvider(appContext)
 
     val cache: Cache = SimpleCache(File(appContext.filesDir, "downloads"), NoOpCacheEvictor(), databaseProvider)
 

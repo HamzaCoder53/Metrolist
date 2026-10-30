@@ -57,4 +57,16 @@
     <string name="wifi_only">Wi-Fi only</string>
     <string name="charging_only">Only while charging</string>
     <string name="song_count">%1$d songs</string>
+    <string name="listening_cache">Listening cache</string>
+    <string name="listening_cache_info">Songs you play are saved so you can replay them offline. Oldest are removed first.</string>
+    <string name="cache_off">Off</string>
+    <string name="cache_unlimited">Unlimited</string>
+    <string name="cache_size">Cache size</string>
+    <string name="smaller">Smaller</string>
+    <string name="bigger">Bigger</string>
+    <string name="cache_used">%1$s used</string>
+    <string name="clear_cache">Clear cache</string>
+    <string name="clear_cache_title">Clear listening cache?</string>
+    <string name="recently_played">Recently played (offline)</string>
+    <string name="storage_breakdown">Downloads %1$s · Cache %2$s · %3$s free</string>
 </resources>

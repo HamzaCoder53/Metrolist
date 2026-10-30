@@ -27,6 +27,7 @@ object Routes {
     const val ABOUT = "about"
     const val COLLECTION = "collection/{kind}/{id}"
     const val LIBRARY = "library"
+    const val CACHE_SIZE = "cache_size"
     const val LIBRARY_COLLECTION = "library/{collectionId}"
 
     fun collection(kind: String, id: String) = "collection/$kind/${Uri.encode(id)}"
@@ -93,6 +94,11 @@ fun WaveletApp() {
                     LibraryScreen(
                         onPlay = playDownloads,
                         onOpenCollection = { navController.navigate(Routes.libraryCollection(it)) },
+                        onPlayCached = { songs, index ->
+                            if (player.playItems(songs.map { it.toMediaItem() }, index)) {
+                                navController.navigate(Routes.NOW_PLAYING)
+                            }
+                        },
                     )
                 }
                 composable(Routes.LIBRARY_COLLECTION) { entry ->
@@ -113,7 +119,8 @@ fun WaveletApp() {
                         },
                     )
                 }
-                composable(Routes.SETTINGS) { SettingsScreen() }
+                composable(Routes.SETTINGS) { SettingsScreen(onOpenCacheSize = { navController.navigate(Routes.CACHE_SIZE) }) }
+                composable(Routes.CACHE_SIZE) { CacheSizeScreen() }
                 composable(Routes.ABOUT) { AboutScreen() }
             }
         }

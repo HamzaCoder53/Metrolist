@@ -27,6 +27,7 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import io.github.hamzacoder53.wavelet.R
 import io.github.hamzacoder53.wavelet.WaveletApplication
+import io.github.hamzacoder53.wavelet.playback.CachedSong
 import io.github.hamzacoder53.wavelet.playback.DownloadedSong
 
 /**
@@ -38,9 +39,13 @@ fun LibraryScreen(
     onPlay: (List<DownloadedSong>, Int) -> Unit,
     onOpenCollection: (String) -> Unit,
     collectionId: String? = null,
+    onPlayCached: (List<CachedSong>, Int) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
-    val downloads = (context.applicationContext as WaveletApplication).downloads
+    val app = context.applicationContext as WaveletApplication
+    val downloads = app.downloads
+    val listeningCache = app.listeningCache
+    val cached by listeningCache.songs.collectAsState()
     val all by downloads.songs.collectAsState()
     val songs = if (collectionId == null) all else all.filter { it.collectionId == collectionId }
     val waiting by downloads.waitingForRequirements.collectAsState()
@@ -67,16 +72,31 @@ fun LibraryScreen(
                 item {
                     CenteredText(
                         stringResource(
-                            R.string.storage_used,
+                            R.string.storage_breakdown,
                             Formatter.formatShortFileSize(context, downloads.usedBytes()),
+                            Formatter.formatShortFileSize(context, listeningCache.usedBytes()),
                             Formatter.formatShortFileSize(context, downloads.freeBytes()),
                         ),
                     )
                 }
+                // Songs saved while streaming; playable offline without downloading.
+                val recent = cached.filter { song -> all.none { it.id == song.id } }
+                if (recent.isNotEmpty()) {
+                    item { ListHeader { Text(stringResource(R.string.recently_played)) } }
+                    items(recent, key = { "r:" + it.id }) { song ->
+                        ItemButton(
+                            title = song.title,
+                            subtitle = song.artist,
+                            thumbnail = null,
+                            artworkModel = song.artworkUri,
+                            onClick = { onPlayCached(recent, recent.indexOf(song)) },
+                        )
+                    }
+                }
             }
-            if (songs.isEmpty()) {
+            if (songs.isEmpty() && (collectionId != null || cached.isEmpty())) {
                 item { CenteredText(stringResource(R.string.no_downloads)) }
-            } else {
+            } else if (songs.isNotEmpty()) {
                 item {
                     Button(
                         onClick = { onPlay(playable, 0) },

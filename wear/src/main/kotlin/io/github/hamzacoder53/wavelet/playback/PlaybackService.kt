@@ -26,6 +26,8 @@ class PlaybackService : MediaSessionService() {
     private lateinit var dataSource: YouTubeDataSource
     private var retriedMediaId: String? = null
 
+    private val app get() = application as WaveletApplication
+
     override fun onCreate() {
         super.onCreate()
         dataSource = YouTubeDataSource(this)
@@ -33,7 +35,7 @@ class PlaybackService : MediaSessionService() {
         val player =
             ExoPlayer.Builder(this)
                 .setMediaSourceFactory(
-                    DefaultMediaSourceFactory(dataSource.factory((application as WaveletApplication).downloads.cache)),
+                    DefaultMediaSourceFactory(dataSource.factory(app.downloads.cache, app.listeningCache)),
                 )
                 .setAudioAttributes(
                     AudioAttributes.Builder()
@@ -97,6 +99,15 @@ class PlaybackService : MediaSessionService() {
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 if (mediaItem?.mediaId != retriedMediaId) retriedMediaId = null
+                mediaItem?.let(app.listeningCache::recordPlayed)
+                // The previous song may have just finished caching; update the offline list.
+                app.listeningCache.refresh()
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED || playbackState == Player.STATE_READY) {
+                    app.listeningCache.refresh()
+                }
             }
         }
 

@@ -1,1 +1,1 @@
-Offline: download songs, albums and playlists; Downloads library with storage use and delete; Wi-Fi only and charging-only options.
+Listening cache: songs you stream are saved so you can replay them offline. Set the size from Off to Unlimited with a slider or the crown.
