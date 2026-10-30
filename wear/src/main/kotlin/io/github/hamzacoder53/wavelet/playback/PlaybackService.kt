@@ -17,6 +17,7 @@ import androidx.media3.session.MediaSessionService
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.github.hamzacoder53.wavelet.WaveletApplication
+import io.github.hamzacoder53.wavelet.surfaces.NowPlayingStore
 import io.github.hamzacoder53.wavelet.ui.MainActivity
 import timber.log.Timber
 
@@ -74,6 +75,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        NowPlayingStore.write(this, null, false)
         mediaSession?.run {
             player.release()
             release()
@@ -102,6 +104,12 @@ class PlaybackService : MediaSessionService() {
                 mediaItem?.let(app.listeningCache::recordPlayed)
                 // The previous song may have just finished caching; update the offline list.
                 app.listeningCache.refresh()
+            }
+
+            override fun onEvents(player: Player, events: Player.Events) {
+                if (events.containsAny(Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_IS_PLAYING_CHANGED, Player.EVENT_MEDIA_METADATA_CHANGED)) {
+                    NowPlayingStore.write(this@PlaybackService, player.currentMediaItem, player.isPlaying)
+                }
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {

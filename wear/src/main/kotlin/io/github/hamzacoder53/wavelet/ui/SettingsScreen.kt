@@ -39,6 +39,7 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
     var wifiOnly by remember { mutableStateOf(settings.downloadOnWifiOnly) }
     var chargingOnly by remember { mutableStateOf(settings.downloadWhileChargingOnly) }
     var confirmClear by remember { mutableStateOf(false) }
+    var showLyrics by remember { mutableStateOf(settings.showLyrics) }
     // Re-read size and limit whenever the cached song list changes (after clearing, resizing or playing).
     val cachedSongs by listeningCache.songs.collectAsState()
     val cacheUsed = remember(cachedSongs) { listeningCache.usedBytes() }
@@ -70,6 +71,19 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
                         },
                     )
                 }
+            }
+
+            item { ListHeader { Text(stringResource(R.string.lyrics)) } }
+            item {
+                SwitchButton(
+                    checked = showLyrics,
+                    onCheckedChange = {
+                        settings.showLyrics = it
+                        showLyrics = it
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.show_lyrics)) },
+                )
             }
 
             item { ListHeader { Text(stringResource(R.string.downloads_section)) } }

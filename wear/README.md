@@ -58,6 +58,42 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
   - **Clear cache** is just below the size row in Settings.
   - Downloads are kept separately and never removed by the cache.
 
+## Features (Phase 3: account and extras)
+
+- **Account** (Home → Account) has two ways to sign in:
+  - **Sign in on watch:** Google's sign-in page opens on the watch, like Metrolist's
+    login. It gives you your full YouTube Music account. It's only shown if the watch has a
+    WebView; many Wear OS watches, including the emulator, don't.
+  - **Sign in with a code:** the watch shows a short code. You enter it at
+    google.com/device on any phone or computer. This uses Google's official device sign-in
+    and the read-only YouTube Data API, and syncs liked songs and playlists. It needs an
+    OAuth client in the build (see below).
+- **Your library:** your liked songs and playlists, with **Play**, **Download liked songs**
+  and **Sync now**. The last sync is saved, so the list still shows offline.
+- **Synced lyrics:** tap the lyrics button on Now Playing. The current line replaces the
+  title, with the next line dimmed underneath, and follows playback. Lyrics come from LrcLib
+  through Metrolist's shared `:lyrics` module. Turn the button off in
+  Settings → Lyrics.
+- **Tile:** shows what's playing with play/pause, plus your two most recent songs (tap one to
+  play it).
+- **Complication:** shows the current song on any watch face that supports text
+  complications. Tap it to open Wavelet.
+
+### Setting up "Sign in with a code"
+
+1. In Google Cloud Console, open a project and enable the **YouTube Data API v3**.
+2. Configure the OAuth consent screen: external, in testing, with your Google account as
+   a test user.
+3. Create an OAuth client of type **TVs and Limited Input devices**.
+4. Save its ID and secret outside the repo, in `~/.android/wavelet-oauth.properties`:
+
+   ```properties
+   clientId=YOUR_CLIENT_ID.apps.googleusercontent.com
+   clientSecret=YOUR_CLIENT_SECRET
+   ```
+
+5. Rebuild. Without this file, the option shows "Not set up in this build".
+
 ## Build
 
 ```sh

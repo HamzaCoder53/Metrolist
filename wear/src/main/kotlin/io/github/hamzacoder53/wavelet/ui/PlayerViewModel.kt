@@ -44,9 +44,30 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _volume = MutableStateFlow(currentVolume())
     val volume: StateFlow<Pair<Int, Int>> = _volume.asStateFlow()
 
+    private val app = application as io.github.hamzacoder53.wavelet.WaveletApplication
+    val lyrics = app.lyrics.state
+
+    private val _showLyrics = MutableStateFlow(false)
+    val showLyrics: StateFlow<Boolean> = _showLyrics.asStateFlow()
+    val lyricsEnabled: Boolean get() = app.settings.showLyrics
+
+    fun toggleLyrics() {
+        _showLyrics.value = !_showLyrics.value
+        if (_showLyrics.value) controller?.currentMediaItem?.let(::loadLyrics)
+    }
+
+    private fun loadLyrics(item: MediaItem) {
+        val md = item.mediaMetadata
+        app.lyrics.load(item.mediaId, md.title?.toString().orEmpty(), md.artist?.toString().orEmpty(), md.durationMs)
+    }
+
     private val listener =
         object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) = refresh(player)
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                if (_showLyrics.value && mediaItem != null) loadLyrics(mediaItem) else app.lyrics.clear()
+            }
         }
 
     init {
@@ -60,7 +81,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             while (isActive) {
                 controller?.let { player -> if (player.isPlaying) refresh(player) }
-                delay(1000)
+                // Lyrics need finer position updates than the progress ring.
+                delay(if (_showLyrics.value) 250 else 1000)
             }
         }
     }

@@ -16,6 +16,16 @@ val uploadSigning =
         file(path).takeIf { it.isFile }?.inputStream()?.use(::load)
     }
 
+// OAuth client for "Sign in with a code" (TVs and Limited Input devices type); kept outside the repo.
+// Without it the code sign-in option is hidden. Override with WAVELET_OAUTH_PROPERTIES.
+val oauthClient =
+    Properties().apply {
+        val path =
+            System.getenv("WAVELET_OAUTH_PROPERTIES")
+                ?: "${System.getProperty("user.home")}/.android/wavelet-oauth.properties"
+        file(path).takeIf { it.isFile }?.inputStream()?.use(::load)
+    }
+
 // Play service-account key (shared with Tumbler); override with WAVELET_PLAY_CREDENTIALS.
 val playCredentials =
     file(
@@ -37,8 +47,10 @@ android {
         applicationId = "io.github.hamzacoder53.wavelet"
         minSdk = 30
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.2.1"
+        versionCode = 5
+        versionName = "0.3.0"
+        buildConfigField("String", "OAUTH_CLIENT_ID", "\"${oauthClient.getProperty("clientId", "")}\"")
+        buildConfigField("String", "OAUTH_CLIENT_SECRET", "\"${oauthClient.getProperty("clientSecret", "")}\"")
     }
 
     buildFeatures {
@@ -96,6 +108,11 @@ play {
 
 dependencies {
     implementation(project(":streaming"))
+    implementation(project(":lyrics"))
+    implementation("androidx.webkit:webkit:1.14.0")
+    implementation("androidx.wear.tiles:tiles:1.6.2")
+    implementation("androidx.wear.protolayout:protolayout:1.4.2")
+    implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.3.0")
 
     implementation("androidx.wear.compose:compose-material3:$wearCompose")
     implementation("androidx.wear.compose:compose-foundation:$wearCompose")
@@ -115,4 +132,5 @@ dependencies {
     implementation(libs.timber)
 
     coreLibraryDesugaring(libs.desugaring)
+    testImplementation(libs.junit)
 }

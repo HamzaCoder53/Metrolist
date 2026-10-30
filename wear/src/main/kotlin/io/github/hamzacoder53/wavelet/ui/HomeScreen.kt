@@ -23,6 +23,7 @@ fun HomeScreen(
     onSearch: () -> Unit,
     onNowPlaying: () -> Unit,
     onDownloads: () -> Unit,
+    onAccount: () -> Unit,
     onSettings: () -> Unit,
     onAbout: () -> Unit,
 ) {
@@ -60,6 +61,14 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     icon = { Icon(painterResource(R.drawable.ic_library), contentDescription = null) },
                     label = { Text(stringResource(R.string.downloads)) },
+                )
+            }
+            item {
+                FilledTonalButton(
+                    onClick = onAccount,
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = { Icon(painterResource(R.drawable.ic_account), contentDescription = null) },
+                    label = { Text(stringResource(R.string.account)) },
                 )
             }
             item {

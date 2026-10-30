@@ -43,6 +43,8 @@ import coil3.compose.AsyncImage
 import androidx.compose.ui.platform.LocalContext
 import io.github.hamzacoder53.wavelet.R
 import io.github.hamzacoder53.wavelet.WaveletApplication
+import io.github.hamzacoder53.wavelet.playback.LyricsState
+import io.github.hamzacoder53.wavelet.playback.SyncedLyrics
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
@@ -54,6 +56,8 @@ fun NowPlayingScreen(player: PlayerViewModel) {
     val state by player.state.collectAsState()
     val volume by player.volume.collectAsState()
     val downloaded by (LocalContext.current.applicationContext as WaveletApplication).downloads.songs.collectAsState()
+    val showLyrics by player.showLyrics.collectAsState()
+    val lyricsState by player.lyrics.collectAsState()
     val focusRequester = remember { FocusRequester() }
     val rotaryAccumulator = remember { mutableFloatStateOf(0f) }
     val volumeShownAt = remember { mutableLongStateOf(0L) }
@@ -109,25 +113,48 @@ fun NowPlayingScreen(player: PlayerViewModel) {
                             .alpha(if (state.isBuffering) 0.5f else 1f),
                 )
                 Spacer(Modifier.height(4.dp))
-                Text(
-                    text =
-                        when {
-                            showVolume -> stringResource(R.string.volume, volume.first)
-                            state.error != null -> stringResource(R.string.playback_error)
-                            else -> metadata?.title?.toString() ?: stringResource(R.string.nothing_playing)
-                        },
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = metadata?.artist?.toString().orEmpty(),
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                )
+                val lyricLines = (lyricsState as? LyricsState.Ready)?.lines.orEmpty()
+                if (showLyrics && !showVolume && lyricLines.isNotEmpty()) {
+                    // Synced lyrics replace title/artist: current line, then the next one dimmed.
+                    val index = SyncedLyrics.currentIndex(lyricLines, state.positionMs)
+                    Text(
+                        text = lyricLines.getOrNull(index)?.text ?: "♪",
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        text = lyricLines.getOrNull(index + 1)?.text.orEmpty(),
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.alpha(0.6f),
+                    )
+                } else {
+                    Text(
+                        text =
+                            when {
+                                showVolume -> stringResource(R.string.volume, volume.first)
+                                state.error != null -> stringResource(R.string.playback_error)
+                                showLyrics && lyricsState == LyricsState.Loading -> stringResource(R.string.lyrics_loading)
+                                showLyrics && lyricsState == LyricsState.NotFound -> stringResource(R.string.lyrics_not_found)
+                                else -> metadata?.title?.toString() ?: stringResource(R.string.nothing_playing)
+                            },
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        text = metadata?.artist?.toString().orEmpty(),
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                    )
+                }
                 Spacer(Modifier.height(4.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -168,6 +195,15 @@ fun NowPlayingScreen(player: PlayerViewModel) {
                             stringResource(if (downloadState?.isComplete == true) R.string.downloaded else R.string.download),
                             Modifier.size(18.dp),
                         )
+                    }
+                    if (player.lyricsEnabled) {
+                        IconButton(
+                            onClick = player::toggleLyrics,
+                            enabled = state.mediaItem != null,
+                            modifier = Modifier.size(32.dp).alpha(if (showLyrics) 1f else 0.6f),
+                        ) {
+                            Icon(painterResource(R.drawable.ic_lyrics), stringResource(R.string.lyrics), Modifier.size(18.dp))
+                        }
                     }
                     IconButton(
                         onClick = { player.seekBy(10_000) },

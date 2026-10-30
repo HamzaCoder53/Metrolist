@@ -1,10 +1,12 @@
 package io.github.hamzacoder53.wavelet.ui
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.metrolist.innertube.YouTube
 import com.metrolist.innertube.models.SongItem
+import io.github.hamzacoder53.wavelet.WaveletApplication
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,8 +21,8 @@ sealed interface CollectionState {
     data object Failed : CollectionState
 }
 
-/** Loads an album (browseId) or playlist (playlistId) passed in the nav route. */
-class CollectionViewModel(savedState: SavedStateHandle) : ViewModel() {
+/** Loads an album (browseId), a public playlist, or a playlist from the signed-in account. */
+class CollectionViewModel(application: Application, savedState: SavedStateHandle) : AndroidViewModel(application) {
     val kind: String = checkNotNull(savedState["kind"])
     val id: String = checkNotNull(savedState["id"])
 
@@ -35,11 +37,16 @@ class CollectionViewModel(savedState: SavedStateHandle) : ViewModel() {
         _state.value = CollectionState.Loading
         viewModelScope.launch {
             _state.value =
-                runCatching { if (kind == KIND_ALBUM) loadAlbum() else loadPlaylist() }
-                    .getOrElse {
-                        Timber.w(it, "Could not load %s %s", kind, id)
-                        CollectionState.Failed
+                runCatching {
+                    when (kind) {
+                        KIND_ALBUM -> loadAlbum()
+                        KIND_ACCOUNT_PLAYLIST -> loadAccountPlaylist()
+                        else -> loadPlaylist()
                     }
+                }.getOrElse {
+                    Timber.w(it, "Could not load %s %s", kind, id)
+                    CollectionState.Failed
+                }
         }
     }
 
@@ -69,9 +76,20 @@ class CollectionViewModel(savedState: SavedStateHandle) : ViewModel() {
         )
     }
 
+    private suspend fun loadAccountPlaylist(): CollectionState {
+        val library = getApplication<WaveletApplication>().accountLibrary
+        val playlist = library.snapshot.value.playlists.firstOrNull { it.id == id }
+        return CollectionState.Loaded(
+            title = playlist?.title ?: id,
+            subtitle = playlist?.subtitle,
+            songs = library.playlistSongs(id).take(MAX_PLAYLIST_SONGS),
+        )
+    }
+
     companion object {
         const val KIND_ALBUM = "album"
         const val KIND_PLAYLIST = "playlist"
+        const val KIND_ACCOUNT_PLAYLIST = "account"
         private const val MAX_PLAYLIST_SONGS = 200
     }
 }

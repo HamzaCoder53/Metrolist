@@ -1,1 +1,1 @@
-Listening cache: songs you stream are saved so you can replay them offline. Set the size from Off to Unlimited with a slider or the crown.
+Account sign-in (on watch or with a code), liked songs and playlists, synced lyrics on Now Playing, a Tile and a watch-face complication.

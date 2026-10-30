@@ -121,6 +121,9 @@ class ListeningCache(context: Context, private val settings: Settings, databaseP
         }
     }
 
+    /** Most recently played songs (cached or not), newest first; used by the Tile. */
+    fun recentHistory(limit: Int): List<CachedSong> = synchronized(historyFile) { readHistory().take(limit) }
+
     /** Re-checks (off the main thread) which remembered songs are still fully in the cache. */
     fun refresh() {
         scope.launch { refreshNow() }
