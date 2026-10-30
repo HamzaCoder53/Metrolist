@@ -10,6 +10,7 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import com.metrolist.innertube.YouTube
 import com.metrolist.music.utils.InnerTubeXPlayer
+import io.github.hamzacoder53.wavelet.playback.Downloads
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,14 +23,19 @@ class WaveletApplication : Application(), SingletonImageLoader.Factory {
     lateinit var settings: Settings
         private set
 
+    lateinit var downloads: Downloads
+        private set
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         settings = Settings(this)
+        downloads = Downloads(this, settings)
         InnerTubeXPlayer.initialize(this)
 
         YouTube.visitorData = settings.visitorData
         appScope.launch {
+            // Offline launches must not fail here; downloaded songs need no network.
             if (YouTube.visitorData == null) {
                 YouTube.visitorData()
                     .onSuccess { visitorData ->

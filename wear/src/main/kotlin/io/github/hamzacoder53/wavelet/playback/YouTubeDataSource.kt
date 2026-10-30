@@ -7,6 +7,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.ResolvingDataSource
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import com.metrolist.innertube.YouTube
 import com.metrolist.music.playback.CachedStreamUrl
@@ -30,7 +32,18 @@ class YouTubeDataSource(context: Context) {
     private val connectivityManager = appContext.getSystemService(ConnectivityManager::class.java)
     val urlCache = StreamUrlCache(maxEntries = 100)
 
-    fun factory(): DataSource.Factory {
+    /**
+     * Downloaded songs are read straight from [downloadCache] (read-only, keyed by media id), so they
+     * play offline without resolving a stream. Anything not downloaded falls through to the resolver.
+     */
+    fun factory(downloadCache: Cache): DataSource.Factory =
+        CacheDataSource.Factory()
+            .setCache(downloadCache)
+            .setUpstreamDataSourceFactory(resolvingFactory())
+            .setCacheWriteDataSinkFactory(null)
+            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+
+    private fun resolvingFactory(): DataSource.Factory {
         val http = OkHttpDataSource.Factory(OkHttpClient.Builder().proxy(YouTube.proxy).build())
         return ResolvingDataSource.Factory(DefaultDataSource.Factory(appContext, http)) { dataSpec ->
             val mediaId = dataSpec.key ?: throw IOException("No media id")

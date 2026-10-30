@@ -1,1 +1,1 @@
-Phase 1 test build: search, playback, Bluetooth-only output.
+Offline: download songs, albums and playlists; Downloads library with storage use and delete; Wi-Fi only and charging-only options.

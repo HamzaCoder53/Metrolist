@@ -16,6 +16,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import io.github.hamzacoder53.wavelet.WaveletApplication
 import io.github.hamzacoder53.wavelet.ui.MainActivity
 import timber.log.Timber
 
@@ -31,7 +32,9 @@ class PlaybackService : MediaSessionService() {
 
         val player =
             ExoPlayer.Builder(this)
-                .setMediaSourceFactory(DefaultMediaSourceFactory(dataSource.factory()))
+                .setMediaSourceFactory(
+                    DefaultMediaSourceFactory(dataSource.factory((application as WaveletApplication).downloads.cache)),
+                )
                 .setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(C.USAGE_MEDIA)

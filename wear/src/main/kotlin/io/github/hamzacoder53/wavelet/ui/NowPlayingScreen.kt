@@ -40,7 +40,9 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import coil3.compose.AsyncImage
+import androidx.compose.ui.platform.LocalContext
 import io.github.hamzacoder53.wavelet.R
+import io.github.hamzacoder53.wavelet.WaveletApplication
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
@@ -51,6 +53,7 @@ private const val ROTARY_STEP_PX = 48f
 fun NowPlayingScreen(player: PlayerViewModel) {
     val state by player.state.collectAsState()
     val volume by player.volume.collectAsState()
+    val downloaded by (LocalContext.current.applicationContext as WaveletApplication).downloads.songs.collectAsState()
     val focusRequester = remember { FocusRequester() }
     val rotaryAccumulator = remember { mutableFloatStateOf(0f) }
     val volumeShownAt = remember { mutableLongStateOf(0L) }
@@ -143,13 +146,28 @@ fun NowPlayingScreen(player: PlayerViewModel) {
                         Icon(painterResource(R.drawable.ic_skip_next), stringResource(R.string.next))
                     }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     IconButton(
                         onClick = { player.seekBy(-10_000) },
                         enabled = state.mediaItem != null,
                         modifier = Modifier.size(32.dp),
                     ) {
                         Icon(painterResource(R.drawable.ic_replay), stringResource(R.string.seek_back), Modifier.size(18.dp))
+                    }
+                    val currentId = state.mediaItem?.mediaId
+                    val downloadState = downloaded.firstOrNull { it.id == currentId }
+                    IconButton(
+                        onClick = player::downloadCurrent,
+                        enabled = currentId != null && downloadState == null,
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        Icon(
+                            painterResource(
+                                if (downloadState?.isComplete == true) R.drawable.ic_download_done else R.drawable.ic_download,
+                            ),
+                            stringResource(if (downloadState?.isComplete == true) R.string.downloaded else R.string.download),
+                            Modifier.size(18.dp),
+                        )
                     }
                     IconButton(
                         onClick = { player.seekBy(10_000) },

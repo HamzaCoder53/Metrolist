@@ -4,6 +4,7 @@ import android.app.RemoteInput
 import android.content.Intent
 import android.speech.RecognizerIntent
 import android.view.inputmethod.EditorInfo
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -25,10 +27,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
-import androidx.wear.compose.foundation.lazy.itemsIndexed
+import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.FilledIconButton
 import androidx.wear.compose.material3.FilledTonalButton
+import androidx.wear.compose.material3.FilledTonalIconButton
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
@@ -37,8 +40,11 @@ import androidx.wear.compose.material3.Text
 import androidx.wear.input.RemoteInputIntentHelper
 import androidx.wear.input.wearableExtender
 import coil3.compose.AsyncImage
+import com.metrolist.innertube.models.AlbumItem
+import com.metrolist.innertube.models.PlaylistItem
 import com.metrolist.innertube.models.SongItem
 import io.github.hamzacoder53.wavelet.R
+import io.github.hamzacoder53.wavelet.WaveletApplication
 import io.github.hamzacoder53.wavelet.playback.THUMBNAIL_PX
 import io.github.hamzacoder53.wavelet.playback.sizedThumbnail
 
@@ -47,10 +53,15 @@ private const val QUERY_KEY = "query"
 @Composable
 fun SearchScreen(
     onPlay: (List<SongItem>, Int) -> Unit,
+    onOpenCollection: (kind: String, id: String) -> Unit,
     viewModel: SearchViewModel = viewModel(),
 ) {
+    val context = LocalContext.current
+    val downloads = (context.applicationContext as WaveletApplication).downloads
     val state by viewModel.state.collectAsState()
+    val type by viewModel.type.collectAsState()
     val keyboardLabel = stringResource(R.string.search)
+    val downloadingText = stringResource(R.string.download)
 
     val voiceLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -107,18 +118,80 @@ fun SearchScreen(
                     }
                 }
             }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                ) {
+                    // Icon-only so all three fit on small round screens; the selected one is filled.
+                    SearchType.entries.forEach { option ->
+                        val label = stringResource(option.labelRes())
+                        val icon =
+                            when (option) {
+                                SearchType.SONGS -> R.drawable.ic_music_note
+                                SearchType.ALBUMS -> R.drawable.ic_album
+                                SearchType.PLAYLISTS -> R.drawable.ic_playlist
+                            }
+                        if (option == type) {
+                            FilledIconButton(onClick = {}, modifier = Modifier.size(40.dp)) {
+                                Icon(painterResource(icon), label, Modifier.size(20.dp))
+                            }
+                        } else {
+                            FilledTonalIconButton(onClick = { viewModel.setType(option) }, modifier = Modifier.size(40.dp)) {
+                                Icon(painterResource(icon), label, Modifier.size(20.dp))
+                            }
+                        }
+                    }
+                }
+            }
 
             when (val current = state) {
                 SearchState.Idle -> Unit
                 is SearchState.Loading -> item { CenteredText(stringResource(R.string.searching)) }
                 is SearchState.Failed -> item { CenteredText(stringResource(R.string.search_failed)) }
                 is SearchState.Results -> {
-                    item { ListHeader { Text(current.query, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
-                    if (current.songs.isEmpty()) {
+                    item {
+                        ListHeader {
+                            Text(
+                                "${stringResource(type.labelRes())}: ${current.query}",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                    if (current.items.isEmpty()) {
                         item { CenteredText(stringResource(R.string.no_results)) }
                     }
-                    itemsIndexed(current.songs, key = { _, song -> song.id }) { index, song ->
-                        SongButton(song = song, onClick = { onPlay(current.songs, index) })
+                    val songs = current.songs
+                    items(current.items, key = { it.id }) { item ->
+                        when (item) {
+                            is SongItem ->
+                                ItemButton(
+                                    title = item.title,
+                                    subtitle = item.artists.joinToString { it.name },
+                                    thumbnail = item.thumbnail,
+                                    onClick = { onPlay(songs, songs.indexOf(item)) },
+                                    onLongClick = {
+                                        downloads.download(listOf(item))
+                                        Toast.makeText(context, "$downloadingText: ${item.title}", Toast.LENGTH_SHORT).show()
+                                    },
+                                )
+                            is AlbumItem ->
+                                ItemButton(
+                                    title = item.title,
+                                    subtitle = item.artists?.joinToString { it.name },
+                                    thumbnail = item.thumbnail,
+                                    onClick = { onOpenCollection(CollectionViewModel.KIND_ALBUM, item.browseId) },
+                                )
+                            is PlaylistItem ->
+                                ItemButton(
+                                    title = item.title,
+                                    subtitle = item.author?.name,
+                                    thumbnail = item.thumbnail,
+                                    onClick = { onOpenCollection(CollectionViewModel.KIND_PLAYLIST, item.id) },
+                                )
+                            else -> Unit
+                        }
                     }
                 }
             }
@@ -126,24 +199,36 @@ fun SearchScreen(
     }
 }
 
+private fun SearchType.labelRes(): Int =
+    when (this) {
+        SearchType.SONGS -> R.string.songs
+        SearchType.ALBUMS -> R.string.albums
+        SearchType.PLAYLISTS -> R.string.playlists
+    }
+
 @Composable
-private fun SongButton(
-    song: SongItem,
+internal fun ItemButton(
+    title: String,
+    subtitle: String?,
+    thumbnail: String?,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    artworkModel: Any? = thumbnail?.sizedThumbnail(THUMBNAIL_PX),
 ) {
     FilledTonalButton(
         onClick = onClick,
+        onLongClick = onLongClick,
         modifier = Modifier.fillMaxWidth(),
         icon = {
             AsyncImage(
-                model = song.thumbnail.sizedThumbnail(THUMBNAIL_PX),
+                model = artworkModel,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp).clip(CircleShape),
             )
         },
-        label = { Text(song.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        label = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         secondaryLabel = {
-            Text(song.artists.joinToString { it.name }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(subtitle.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
     )
 }

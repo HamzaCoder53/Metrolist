@@ -2,6 +2,7 @@ package io.github.hamzacoder53.wavelet.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,6 +25,13 @@ object Routes {
     const val HEADPHONES = "headphones"
     const val SETTINGS = "settings"
     const val ABOUT = "about"
+    const val COLLECTION = "collection/{kind}/{id}"
+    const val LIBRARY = "library"
+    const val LIBRARY_COLLECTION = "library/{collectionId}"
+
+    fun collection(kind: String, id: String) = "collection/$kind/${Uri.encode(id)}"
+
+    fun libraryCollection(id: String) = "library/${Uri.encode(id)}"
 }
 
 class MainActivity : ComponentActivity() {
@@ -60,15 +68,38 @@ fun WaveletApp() {
                         nowPlaying = playerState.mediaItem,
                         onSearch = { navController.navigate(Routes.SEARCH) },
                         onNowPlaying = { navController.navigate(Routes.NOW_PLAYING) },
+                        onDownloads = { navController.navigate(Routes.LIBRARY) },
                         onSettings = { navController.navigate(Routes.SETTINGS) },
                         onAbout = { navController.navigate(Routes.ABOUT) },
                     )
                 }
+                val playSongs: (List<com.metrolist.innertube.models.SongItem>, Int) -> Unit = { songs, index ->
+                    if (player.playSongs(songs, index)) navController.navigate(Routes.NOW_PLAYING)
+                }
+                val playDownloads: (List<io.github.hamzacoder53.wavelet.playback.DownloadedSong>, Int) -> Unit =
+                    { songs, index ->
+                        if (player.playItems(songs.map { it.toMediaItem() }, index)) {
+                            navController.navigate(Routes.NOW_PLAYING)
+                        }
+                    }
                 composable(Routes.SEARCH) {
                     SearchScreen(
-                        onPlay = { songs, index ->
-                            if (player.playSongs(songs, index)) navController.navigate(Routes.NOW_PLAYING)
-                        },
+                        onPlay = playSongs,
+                        onOpenCollection = { kind, id -> navController.navigate(Routes.collection(kind, id)) },
+                    )
+                }
+                composable(Routes.COLLECTION) { CollectionScreen(onPlay = playSongs) }
+                composable(Routes.LIBRARY) {
+                    LibraryScreen(
+                        onPlay = playDownloads,
+                        onOpenCollection = { navController.navigate(Routes.libraryCollection(it)) },
+                    )
+                }
+                composable(Routes.LIBRARY_COLLECTION) { entry ->
+                    LibraryScreen(
+                        onPlay = playDownloads,
+                        onOpenCollection = {},
+                        collectionId = entry.arguments?.getString("collectionId"),
                     )
                 }
                 composable(Routes.NOW_PLAYING) { NowPlayingScreen(player) }

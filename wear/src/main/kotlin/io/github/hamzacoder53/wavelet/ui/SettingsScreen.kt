@@ -14,15 +14,21 @@ import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.RadioButton
 import androidx.wear.compose.material3.ScreenScaffold
+import androidx.wear.compose.material3.SwitchButton
 import androidx.wear.compose.material3.Text
 import com.metrolist.music.constants.AudioQuality
 import io.github.hamzacoder53.wavelet.R
+import io.github.hamzacoder53.wavelet.WaveletApplication
 import io.github.hamzacoder53.wavelet.settings
 
 @Composable
 fun SettingsScreen() {
-    val settings = LocalContext.current.settings
+    val context = LocalContext.current
+    val settings = context.settings
+    val downloads = (context.applicationContext as WaveletApplication).downloads
     var quality by remember { mutableStateOf(settings.audioQuality) }
+    var wifiOnly by remember { mutableStateOf(settings.downloadOnWifiOnly) }
+    var chargingOnly by remember { mutableStateOf(settings.downloadWhileChargingOnly) }
 
     val listState = rememberTransformingLazyColumnState()
     ScreenScaffold(scrollState = listState) { contentPadding ->
@@ -50,6 +56,32 @@ fun SettingsScreen() {
                         },
                     )
                 }
+            }
+
+            item { ListHeader { Text(stringResource(R.string.downloads_section)) } }
+            item {
+                SwitchButton(
+                    checked = wifiOnly,
+                    onCheckedChange = {
+                        settings.downloadOnWifiOnly = it
+                        wifiOnly = it
+                        downloads.applyRequirements()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.wifi_only)) },
+                )
+            }
+            item {
+                SwitchButton(
+                    checked = chargingOnly,
+                    onCheckedChange = {
+                        settings.downloadWhileChargingOnly = it
+                        chargingOnly = it
+                        downloads.applyRequirements()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.charging_only)) },
+                )
             }
         }
     }

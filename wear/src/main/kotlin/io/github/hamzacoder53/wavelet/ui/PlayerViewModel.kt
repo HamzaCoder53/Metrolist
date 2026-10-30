@@ -66,9 +66,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** Queues [songs] from [startIndex]; playback only starts once headphones are connected. */
-    fun playSongs(songs: List<SongItem>, startIndex: Int): Boolean {
+    fun playSongs(songs: List<SongItem>, startIndex: Int): Boolean = playItems(songs.map { it.toMediaItem() }, startIndex)
+
+    fun playItems(items: List<MediaItem>, startIndex: Int): Boolean {
         val player = controller ?: return false
-        player.setMediaItems(songs.map { it.toMediaItem() }, startIndex, 0)
+        player.setMediaItems(items, startIndex, 0)
         player.prepare()
         val canPlay = AudioOutputs.hasHeadphones(getApplication())
         if (canPlay) player.play()
@@ -90,6 +92,21 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         } else {
             _state.update { it.copy(needsHeadphones = true) }
         }
+    }
+
+    /** Downloads the current song for offline use (metadata comes from the queue item). */
+    fun downloadCurrent() {
+        val item = controller?.currentMediaItem ?: return
+        val md = item.mediaMetadata
+        val song =
+            SongItem(
+                id = item.mediaId,
+                title = md.title?.toString() ?: item.mediaId,
+                artists = listOf(com.metrolist.innertube.models.Artist(name = md.artist?.toString().orEmpty(), id = null)),
+                duration = md.durationMs?.let { (it / 1000).toInt() },
+                thumbnail = md.artworkUri?.toString().orEmpty(),
+            )
+        (getApplication<Application>() as io.github.hamzacoder53.wavelet.WaveletApplication).downloads.download(listOf(song))
     }
 
     fun skipNext() = controller?.seekToNextMediaItem()

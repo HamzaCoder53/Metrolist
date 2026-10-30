@@ -22,6 +22,7 @@ fun HomeScreen(
     nowPlaying: MediaItem?,
     onSearch: () -> Unit,
     onNowPlaying: () -> Unit,
+    onDownloads: () -> Unit,
     onSettings: () -> Unit,
     onAbout: () -> Unit,
 ) {
@@ -51,6 +52,14 @@ fun HomeScreen(
                             overflow = TextOverflow.Ellipsis,
                         )
                     },
+                )
+            }
+            item {
+                FilledTonalButton(
+                    onClick = onDownloads,
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = { Icon(painterResource(R.drawable.ic_library), contentDescription = null) },
+                    label = { Text(stringResource(R.string.downloads)) },
                 )
             }
             item {

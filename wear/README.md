@@ -29,6 +29,25 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
   picker and starts playing once headphones connect.
 - Low audio quality and small artwork by default, to save battery and data.
 
+## Features (Phase 2: offline)
+
+- Search albums and playlists as well as songs (the three filter icons under the search
+  buttons).
+- Downloading:
+  - **Download all** on an album or playlist page.
+  - The download icon on Now Playing.
+  - Long-press a song in search results.
+- **Downloads** library:
+  - Shows storage used and free space.
+  - Albums and playlists are grouped.
+  - **Play all**; tap a song to play it.
+  - Long-press a song, or use **Delete all**, to delete (asks to confirm).
+- Settings → Downloads:
+  - **Wi-Fi only** (on by default). Downloads wait while the watch is on mobile data.
+  - **Only while charging**.
+  - Downloads pause and resume on their own.
+- Downloaded songs play with no connection at all, including their artwork.
+
 ## Build
 
 ```sh
