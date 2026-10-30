@@ -9,7 +9,7 @@ import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.datasource.DataSpec
 
-internal data class CachedStreamUrl(
+data class CachedStreamUrl(
     val url: String,
     val requestHeaders: Map<String, String>,
     val clientName: String,
@@ -18,7 +18,7 @@ internal data class CachedStreamUrl(
     val useRangeChunks: Boolean = false,
 )
 
-internal fun DataSpec.withResolvedStream(stream: CachedStreamUrl): DataSpec {
+fun DataSpec.withResolvedStream(stream: CachedStreamUrl): DataSpec {
     val resolved =
         withUri(stream.url.toUri())
             .withRequestHeaders(httpRequestHeaders + stream.requestHeaders)
@@ -34,7 +34,7 @@ internal fun DataSpec.withResolvedStream(stream: CachedStreamUrl): DataSpec {
     return resolved.subrange(0, boundedLength)
 }
 
-internal class StreamUrlCache(
+class StreamUrlCache(
     private val maxEntries: Int = 500,
     private val currentTimeMillis: () -> Long = System::currentTimeMillis,
 ) {

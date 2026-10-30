@@ -101,7 +101,7 @@ object InnerTubeXPlayer {
             Result.failure(error)
         }
 
-    internal fun markStreamClientFailed(
+    fun markStreamClientFailed(
         videoId: String,
         clientName: String,
         nowMs: Long = System.currentTimeMillis(),
