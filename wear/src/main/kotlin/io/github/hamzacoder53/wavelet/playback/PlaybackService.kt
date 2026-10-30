@@ -42,7 +42,7 @@ class PlaybackService : MediaSessionService() {
                 .setWakeMode(C.WAKE_MODE_NETWORK)
                 // On Wear OS this blocks the built-in speaker and opens the system output
                 // switcher when play is pressed without headphones.
-                .setSuppressPlaybackOnUnsuitableOutput(true)
+                .setSuppressPlaybackOnUnsuitableOutput(!AudioOutputs.speakerAllowed)
                 .build()
         player.addListener(retryOnRejectedStream(player))
 

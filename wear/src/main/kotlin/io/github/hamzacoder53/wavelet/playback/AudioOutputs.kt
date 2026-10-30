@@ -7,6 +7,7 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
+import io.github.hamzacoder53.wavelet.BuildConfig
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -29,10 +30,15 @@ object AudioOutputs {
             }
         }
 
+    /** Emulators have no Bluetooth; debug builds on an emulator may use the speaker for testing. */
+    val speakerAllowed: Boolean =
+        BuildConfig.DEBUG && (Build.HARDWARE.contains("ranchu") || Build.PRODUCT.contains("sdk"))
+
     fun hasHeadphones(context: Context): Boolean =
-        context.getSystemService(AudioManager::class.java)
-            .getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-            .any { it.type in headphoneTypes }
+        speakerAllowed ||
+            context.getSystemService(AudioManager::class.java)
+                .getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                .any { it.type in headphoneTypes }
 
     fun headphonesConnected(context: Context): Flow<Boolean> =
         callbackFlow {

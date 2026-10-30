@@ -124,9 +124,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 hasPrevious = player.hasPreviousMediaItem() || player.currentPosition > 3000,
                 positionMs = player.currentPosition,
                 durationMs = player.duration.coerceAtLeast(0),
+                // Media3 reports this suppression even when idle, so only treat it as a prompt
+                // when the user actually asked to play something.
                 needsHeadphones =
                     it.needsHeadphones ||
-                        player.playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT,
+                        (
+                            player.playWhenReady &&
+                                player.mediaItemCount > 0 &&
+                                player.playbackSuppressionReason ==
+                                Player.PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT
+                        ),
                 error = player.playerError?.message,
             )
         }
