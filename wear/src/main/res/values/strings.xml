@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wavelet</string>
+    <string name="search">Search</string>
+    <string name="voice_search">Voice</string>
+    <string name="keyboard_search">Keyboard</string>
+    <string name="now_playing">Now playing</string>
+    <string name="nothing_playing">Nothing playing</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="searching">Searching…</string>
+    <string name="no_results">No songs found</string>
+    <string name="search_failed">Search failed. Check your connection.</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="seek_back">Back 10 seconds</string>
+    <string name="seek_forward">Forward 10 seconds</string>
+    <string name="volume">Volume %1$d</string>
+    <string name="connect_headphones">Connect headphones</string>
+    <string name="connect_headphones_body">Wavelet only plays through Bluetooth headphones.</string>
+    <string name="open_bluetooth">Open Bluetooth</string>
+    <string name="playback_error">Can\'t play this song</string>
+    <string name="audio_quality">Audio quality</string>
+    <string name="quality_low">Low (saves battery)</string>
+    <string name="quality_auto">Auto</string>
+    <string name="quality_high">High</string>
+    <string name="about_based_on">Based on Metrolist</string>
+    <string name="about_license">Free software under GPL-3.0</string>
+    <string name="about_disclaimer">Not affiliated with, endorsed by or sponsored by YouTube or Google.</string>
+    <string name="notification_channel">Playback</string>
+</resources>
