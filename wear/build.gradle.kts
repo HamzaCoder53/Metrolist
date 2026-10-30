@@ -1,3 +1,4 @@
+import com.github.triplet.gradle.androidpublisher.ReleaseStatus
 import java.util.Properties
 
 // Wavelet: standalone Wear OS client built on Metrolist's :streaming and :innertube modules.
@@ -15,9 +16,17 @@ val uploadSigning =
         file(path).takeIf { it.isFile }?.inputStream()?.use(::load)
     }
 
+// Play service-account key (shared with Tumbler); override with WAVELET_PLAY_CREDENTIALS.
+val playCredentials =
+    file(
+        System.getenv("WAVELET_PLAY_CREDENTIALS")
+            ?: "${System.getProperty("user.home")}/.tumbler/play-service-account.json",
+    )
+
 plugins {
     id("com.android.application")
     alias(libs.plugins.compose.compiler)
+    id("com.github.triplet.play") version "4.1.1"
 }
 
 android {
@@ -71,6 +80,18 @@ android {
 
 kotlin {
     jvmToolchain(21)
+}
+
+play {
+    // Wear OS has its own form-factor tracks in the Play API; the phone "internal" track is unused.
+    track.set("wear:internal")
+    releaseStatus.set(ReleaseStatus.COMPLETED)
+    defaultToAppBundles.set(true)
+    if (playCredentials.isFile) {
+        serviceAccountCredentials.set(playCredentials)
+    } else {
+        enabled.set(false)
+    }
 }
 
 dependencies {
