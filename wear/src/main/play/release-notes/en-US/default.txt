@@ -1,1 +1,1 @@
-Quick picks on Home, autoplay of similar songs, volume normalization, skip silence and a sleep timer.
+Sign in with a code is now available: approve on your phone at google.com/device to sync liked songs and playlists.
