@@ -36,6 +36,24 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 # APK: wear/build/outputs/apk/debug/wear-debug.apk
 ```
 
+## Publish to Play internal testing
+
+Wavelet is on Google Play's **Wear OS internal testing** track (`wear:internal`) for its
+owner's testing only; it is not published publicly.
+
+```sh
+wear/tools/publish.sh            # bump versionCode if needed, build, upload, show what's live
+wear/tools/publish.sh --status   # read-only: what's on each track
+```
+
+- **Release notes:** edit `wear/src/main/play/release-notes/en-US/default.txt` before
+  publishing.
+- **Play service-account key:** `$WAVELET_PLAY_CREDENTIALS`, else
+  `~/.tumbler/play-service-account.json`. The key is shared with Tumbler and stays outside
+  the repo.
+- **Upload key:** `~/.android/wavelet-upload.properties`. Back up both it and the `.jks` it
+  points to.
+
 ## Install over Wi-Fi ADB
 
 1. On the watch, turn on Developer options: Settings → System → About → tap
