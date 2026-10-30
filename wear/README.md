@@ -60,7 +60,18 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 
 ## Features (Phase 3: account and extras)
 
-- **Account** (Home → Account) has two ways to sign in:
+- **Sign in on phone** (recommended): tap it on the watch and the **Wavelet phone app** opens
+  on your paired phone. Sign in to Google there, the way Metrolist does, and the phone sends the
+  YouTube Music session to the watch over the Wear Data Layer. That link only connects your
+  paired devices running Wavelet with the same signature. This gives you the full account on any
+  watch, with no WebView needed and no 7-day expiry. The phone deletes its copy of the login
+  afterwards.
+  - The phone app and watch app must come from the **same place**: both from Google Play, or
+    both from the same GitHub release. Play re-signs apps, and the Data Layer only connects apps
+    with matching signatures.
+- **Sign-in expired:** if a saved sign-in stops working, Account and Your library show
+  "Your sign-in expired" with a **Sign in again** button. Your last synced library stays visible.
+- **Account** (Home → Account) also has two more ways to sign in:
   - **Sign in on watch:** Google's sign-in page opens on the watch, like Metrolist's
     login. It gives you your full YouTube Music account. It's only shown if the watch has a
     WebView; many Wear OS watches, including the emulator, don't.
@@ -113,6 +124,18 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 ./gradlew :wear:assembleDebug
 # APK: wear/build/outputs/apk/debug/wear-debug.apk
 ```
+
+## Download from GitHub
+
+Every release on https://github.com/HamzaCoder53/Metrolist/releases has two APKs:
+
+- `Wavelet-watch-<version>.apk`: install it on the watch over Wi-Fi ADB (see below).
+- `Wavelet-phone-<version>.apk`: install it on the phone you've paired with the watch. It's only
+  needed for **Sign in on phone**.
+
+GitHub builds don't include **Sign in with a code**. That option needs a Google Cloud OAuth client
+in testing mode, which only works for its listed test users. Use **Sign in on phone** or
+**Sign in on watch** instead.
 
 ## Publish to Play internal testing
 

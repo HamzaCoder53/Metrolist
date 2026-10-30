@@ -47,8 +47,8 @@ android {
         applicationId = "io.github.hamzacoder53.wavelet"
         minSdk = 30
         targetSdk = 36
-        versionCode = 7
-        versionName = "0.4.1"
+        versionCode = 8
+        versionName = "0.4.2"
         buildConfigField("String", "OAUTH_CLIENT_ID", "\"${oauthClient.getProperty("clientId", "")}\"")
         buildConfigField("String", "OAUTH_CLIENT_SECRET", "\"${oauthClient.getProperty("clientSecret", "")}\"")
     }
@@ -109,6 +109,10 @@ play {
 dependencies {
     implementation(project(":streaming"))
     implementation(project(":lyrics"))
+    implementation(project(":session"))
+    implementation("com.google.android.gms:play-services-wearable:20.0.1")
+    implementation("androidx.wear:wear-remote-interactions:1.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0")
     implementation("androidx.webkit:webkit:1.14.0")
     implementation("androidx.wear.tiles:tiles:1.6.2")
     implementation("androidx.wear.protolayout:protolayout:1.4.2")

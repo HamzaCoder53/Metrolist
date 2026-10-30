@@ -1,1 +1,1 @@
-Sign in with a code is now available: approve on your phone at google.com/device to sync liked songs and playlists.
+Sign in on phone: use the Wavelet phone app to sign in and send your full YouTube Music account to the watch. Expired sign-ins are now shown with a "Sign in again" button.

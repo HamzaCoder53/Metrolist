@@ -71,6 +71,16 @@
     <string name="storage_breakdown">Downloads %1$s · Cache %2$s · %3$s free</string>
     <string name="account">Account</string>
     <string name="sign_in_explainer">Sign in to sync your liked songs and playlists.</string>
+    <string name="sign_in_on_phone">Sign in on phone</string>
+    <string name="sign_in_on_phone_detail">Full account · uses the Wavelet phone app</string>
+    <string name="phone_sign_in_opening">Opening Wavelet on your phone…</string>
+    <string name="phone_sign_in_continue">Continue on your phone. This watch will sign in automatically.</string>
+    <string name="phone_sign_in_install">Install Wavelet on your phone from the Play Store page that just opened, then try again.</string>
+    <string name="phone_sign_in_no_phone">Couldn\'t reach your phone. Make sure it\'s connected, then try again.</string>
+    <string name="open_on_phone_again">Open on phone again</string>
+    <string name="signed_in_full">Signed in</string>
+    <string name="sign_in_expired">Your sign-in expired. Sign in again to keep syncing.</string>
+    <string name="sign_in_again">Sign in again</string>
     <string name="sign_in_on_watch">Sign in on watch</string>
     <string name="sign_in_on_watch_detail">Full YouTube Music account</string>
     <string name="sign_in_with_code">Sign in with a code</string>

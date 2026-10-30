@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AccountScreen(
+    onPhoneSignIn: () -> Unit,
     onWebSignIn: () -> Unit,
     onCodeSignIn: () -> Unit,
     onOpenLibrary: () -> Unit,
@@ -47,11 +48,31 @@ fun AccountScreen(
     ScreenScaffold(scrollState = listState) { contentPadding ->
         TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
             item { ListHeader { Text(stringResource(R.string.account)) } }
+            if (state.expired) {
+                // The saved sign-in stopped working: say so plainly and offer the matching way back in.
+                item { CenteredText(stringResource(R.string.sign_in_expired)) }
+                item {
+                    Button(
+                        onClick = if (state.mode == AccountMode.CODE) onCodeSignIn else onPhoneSignIn,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.sign_in_again)) },
+                    )
+                }
+            }
             if (!state.signedIn) {
                 item { CenteredText(stringResource(R.string.sign_in_explainer)) }
+                item {
+                    Button(
+                        onClick = onPhoneSignIn,
+                        modifier = Modifier.fillMaxWidth(),
+                        icon = { Icon(painterResource(R.drawable.ic_phone), contentDescription = null) },
+                        label = { Text(stringResource(R.string.sign_in_on_phone)) },
+                        secondaryLabel = { Text(stringResource(R.string.sign_in_on_phone_detail)) },
+                    )
+                }
                 if (account.webSignInAvailable) {
                     item {
-                        Button(
+                        FilledTonalButton(
                             onClick = onWebSignIn,
                             modifier = Modifier.fillMaxWidth(),
                             icon = { Icon(painterResource(R.drawable.ic_keyboard), contentDescription = null) },
@@ -80,7 +101,7 @@ fun AccountScreen(
                 item {
                     CenteredText(
                         state.name ?: stringResource(
-                            if (state.mode == AccountMode.WEB) R.string.signed_in_on_watch else R.string.signed_in_with_code,
+                            if (state.mode == AccountMode.WEB) R.string.signed_in_full else R.string.signed_in_with_code,
                         ),
                     )
                 }

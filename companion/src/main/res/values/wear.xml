@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@array/android_wear_capabilities">
+    <!-- Lets the watch app find this companion (SessionTransfer.CAPABILITY_PHONE). -->
+    <string-array name="android_wear_capabilities">
+        <item>wavelet_phone</item>
+    </string-array>
+</resources>

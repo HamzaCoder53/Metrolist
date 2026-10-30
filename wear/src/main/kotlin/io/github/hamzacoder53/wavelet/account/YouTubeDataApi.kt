@@ -90,6 +90,7 @@ class YouTubeDataApi(
         return withContext(Dispatchers.IO) {
             http.newCall(Request.Builder().url(url).header("Authorization", "Bearer $token").build()).execute().use { response ->
                 val body = response.body?.string().orEmpty()
+                if (response.code == 401) throw SignInExpiredException("YouTube Data API rejected the sign-in")
                 if (!response.isSuccessful) throw IOException("YouTube Data API ${response.code}: ${body.take(200)}")
                 JSONObject(body)
             }

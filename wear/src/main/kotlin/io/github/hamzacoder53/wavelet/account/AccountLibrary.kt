@@ -54,7 +54,21 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
                     }
                 _snapshot.value = fresh
                 withContext(Dispatchers.IO) { save(fresh) }
-            }.onFailure { Timber.w(it, "Library sync failed") }
+            }.onFailure { error ->
+                Timber.w(error, "Library sync failed")
+                if (isExpiredSignIn(error)) account.markExpired()
+            }
+        }
+
+    /**
+     * Code sign-in: Google says invalid_grant / 401. Web session: YouTube rejects the account
+     * lookup while a public request still works (so being offline isn't mistaken for expiry).
+     */
+    private suspend fun isExpiredSignIn(error: Throwable): Boolean =
+        when (account.state.value.mode) {
+            AccountMode.CODE -> error is SignInExpiredException
+            AccountMode.WEB -> YouTube.accountInfo().isFailure && YouTube.visitorData().isSuccess
+            null -> false
         }
 
     /** Songs of one library playlist, using the matching API. */

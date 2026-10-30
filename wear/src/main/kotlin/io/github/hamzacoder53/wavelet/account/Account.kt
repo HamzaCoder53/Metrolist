@@ -6,20 +6,23 @@ import android.webkit.CookieManager
 import com.metrolist.innertube.YouTube
 import io.github.hamzacoder53.wavelet.BuildConfig
 import io.github.hamzacoder53.wavelet.Settings
+import io.github.hamzacoder53.wavelet.session.YouTubeSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import timber.log.Timber
 
 enum class AccountMode {
-    /** Signed in on the watch (YouTube Music cookies): full account, like Metrolist. */
+    /** YouTube Music web session (signed in on the watch, or sent from the phone): full account, like Metrolist. */
     WEB,
 
     /** Signed in with a code (OAuth device flow): liked songs and playlists via the YouTube Data API. */
     CODE,
 }
 
-data class AccountState(val mode: AccountMode?, val name: String?) {
+/** [expired]: the saved sign-in stopped working (e.g. Google expired it); the user must sign in again. */
+data class AccountState(val mode: AccountMode?, val name: String?, val expired: Boolean = false) {
     val signedIn get() = mode != null
 }
 
@@ -40,7 +43,7 @@ class Account(private val context: Context, private val settings: Settings) {
             runCatching { CookieManager.getInstance() }.isSuccess
     }
 
-    /** Re-applies a saved watch session to InnerTube at startup. */
+    /** Re-applies a saved web session to InnerTube at startup. */
     fun applySavedSession() {
         if (_state.value.mode != AccountMode.WEB) return
         YouTube.cookie = settings.cookie
@@ -49,17 +52,31 @@ class Account(private val context: Context, private val settings: Settings) {
         YouTube.useLoginForBrowse = true
     }
 
-    fun completeWebSignIn(cookie: String, visitorData: String, dataSyncId: String, authUser: String, name: String?) {
-        settings.cookie = cookie
-        settings.visitorData = visitorData
-        settings.dataSyncId = dataSyncId
-        settings.authUser = authUser
-        settings.accountName = name
+    /**
+     * Applies a YouTube Music web session (from the watch's WebView or the phone companion) and
+     * looks up the account name. Returns the name, or null if YouTube didn't accept the session.
+     */
+    suspend fun applySession(session: YouTubeSession): String? {
+        YouTube.cookie = session.cookie
+        YouTube.visitorData = session.visitorData
+        YouTube.dataSyncId = session.dataSyncId
+        YouTube.authUser = session.authUser
+        YouTube.useLoginForBrowse = true
+        val info = YouTube.accountInfo().getOrNull()
+        if (info == null) {
+            Timber.w("YouTube didn't accept the session")
+            applySavedSession()
+            return null
+        }
+        settings.cookie = session.cookie
+        settings.visitorData = session.visitorData
+        settings.dataSyncId = session.dataSyncId
+        settings.authUser = session.authUser
+        settings.accountName = info.name
         settings.accountMode = AccountMode.WEB.name
-        YouTube.visitorData = visitorData
-        applySavedSession()
-        _state.value = AccountState(AccountMode.WEB, name)
-        Timber.i("Signed in on watch")
+        _state.value = AccountState(AccountMode.WEB, info.name)
+        Timber.i("Signed in with a YouTube Music session")
+        return info.name
     }
 
     fun completeCodeSignIn(refreshToken: String, name: String?) {
@@ -68,6 +85,14 @@ class Account(private val context: Context, private val settings: Settings) {
         settings.accountMode = AccountMode.CODE.name
         _state.value = AccountState(AccountMode.CODE, name)
         Timber.i("Signed in with code")
+    }
+
+    /** The saved sign-in no longer works; keep the cached library but ask the user to sign in again. */
+    fun markExpired() {
+        if (_state.value.signedIn && !_state.value.expired) {
+            Timber.i("Sign-in expired")
+            _state.update { it.copy(expired = true) }
+        }
     }
 
     fun signOut() {

@@ -24,6 +24,7 @@ import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import io.github.hamzacoder53.wavelet.ui.account.AccountScreen
 import io.github.hamzacoder53.wavelet.ui.account.CodeSignInScreen
+import io.github.hamzacoder53.wavelet.ui.account.PhoneSignInScreen
 import io.github.hamzacoder53.wavelet.ui.account.WebSignInScreen
 import io.github.hamzacoder53.wavelet.ui.account.YourLibraryScreen
 
@@ -39,6 +40,7 @@ object Routes {
     const val CACHE_SIZE = "cache_size"
     const val ACCOUNT = "account"
     const val WEB_SIGN_IN = "sign_in/web"
+    const val PHONE_SIGN_IN = "sign_in/phone"
     const val CODE_SIGN_IN = "sign_in/code"
     const val YOUR_LIBRARY = "your_library"
     const val SLEEP_TIMER = "sleep_timer"
@@ -174,6 +176,7 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
                 composable(Routes.CACHE_SIZE) { CacheSizeScreen() }
                 composable(Routes.ACCOUNT) {
                     AccountScreen(
+                        onPhoneSignIn = { navController.navigate(Routes.PHONE_SIGN_IN) },
                         onWebSignIn = { navController.navigate(Routes.WEB_SIGN_IN) },
                         onCodeSignIn = { navController.navigate(Routes.CODE_SIGN_IN) },
                         onOpenLibrary = { navController.navigate(Routes.YOUR_LIBRARY) },
@@ -182,6 +185,7 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
                 val afterSignIn: () -> Unit = {
                     navController.navigate(Routes.YOUR_LIBRARY) { popUpTo(Routes.ACCOUNT) }
                 }
+                composable(Routes.PHONE_SIGN_IN) { PhoneSignInScreen(onDone = afterSignIn) }
                 composable(Routes.WEB_SIGN_IN) { WebSignInScreen(onDone = afterSignIn) }
                 composable(Routes.CODE_SIGN_IN) { CodeSignInScreen(onDone = afterSignIn) }
                 composable(Routes.YOUR_LIBRARY) {
@@ -190,6 +194,7 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
                         onOpenPlaylist = { id ->
                             navController.navigate(Routes.collection(CollectionViewModel.KIND_ACCOUNT_PLAYLIST, id))
                         },
+                        onSignInAgain = { navController.navigate(Routes.ACCOUNT) },
                     )
                 }
                 composable(Routes.ABOUT) { AboutScreen() }

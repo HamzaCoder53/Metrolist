@@ -29,9 +29,11 @@ import io.github.hamzacoder53.wavelet.ui.ItemButton
 fun YourLibraryScreen(
     onPlay: (List<SongItem>, Int) -> Unit,
     onOpenPlaylist: (id: String) -> Unit,
+    onSignInAgain: () -> Unit,
 ) {
     val app = LocalContext.current.applicationContext as WaveletApplication
     val snapshot by app.accountLibrary.snapshot.collectAsState()
+    val accountState by app.account.state.collectAsState()
 
     // Refresh in the background each time the library opens; the saved copy shows meanwhile.
     LaunchedEffect(Unit) { app.accountLibrary.sync() }
@@ -40,7 +42,18 @@ fun YourLibraryScreen(
     ScreenScaffold(scrollState = listState) { contentPadding ->
         TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
             item { ListHeader { Text(stringResource(R.string.your_library)) } }
-            if (snapshot.likedSongs.isEmpty() && snapshot.playlists.isEmpty()) {
+            if (accountState.expired) {
+                // Keep showing the last synced library, but explain why it can't refresh.
+                item { CenteredText(stringResource(R.string.sign_in_expired)) }
+                item {
+                    Button(
+                        onClick = onSignInAgain,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.sign_in_again)) },
+                    )
+                }
+            }
+            if (snapshot.likedSongs.isEmpty() && snapshot.playlists.isEmpty() && !accountState.expired) {
                 item { CenteredText(stringResource(R.string.syncing)) }
             }
             if (snapshot.likedSongs.isNotEmpty()) {

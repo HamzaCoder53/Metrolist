@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wavelet</string>
+    <string name="title">Sign in your watch</string>
+    <string name="explainer">Sign in to YouTube Music here and Wavelet will send your sign-in to your watch. Your password is entered on Google\'s own page and never stored by Wavelet.</string>
+    <string name="sign_in">Sign in with Google</string>
+    <string name="watch_found">Watch: %1$s</string>
+    <string name="looking_for_watch">Looking for your watch…</string>
+    <string name="no_watch">No watch with Wavelet found. Install Wavelet on your watch and keep it connected to this phone.</string>
+    <string name="finishing">Finishing sign-in…</string>
+    <string name="sending">Sending to your watch…</string>
+    <string name="done">Your watch is signed in as %1$s.</string>
+    <string name="done_no_name">Your watch is signed in.</string>
+    <string name="failed_capture">Sign-in didn\'t finish. Try again.</string>
+    <string name="failed_send">Couldn\'t reach your watch: %1$s</string>
+    <string name="failed_watch">Your watch couldn\'t use this sign-in: %1$s</string>
+    <string name="try_again">Try again</string>
+    <string name="cancel">Cancel</string>
+    <string name="disclaimer">Wavelet is based on Metrolist (GPL-3.0) and is not affiliated with YouTube or Google.</string>
+</resources>

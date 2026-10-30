@@ -10,6 +10,9 @@ import okhttp3.Request
 import org.json.JSONObject
 import java.io.IOException
 
+/** Google refused the saved sign-in (expired or revoked); the user has to sign in again. */
+class SignInExpiredException(message: String) : IOException(message)
+
 /**
  * Google's OAuth 2.0 device flow ("TVs and limited-input devices"): the watch shows a short code,
  * the user approves it at google.com/device on any phone or computer.
@@ -83,7 +86,11 @@ class DeviceCodeAuth(private val http: OkHttpClient = OkHttpClient()) {
 
     private suspend fun post(url: String, vararg fields: Pair<String, String>): JSONObject {
         val json = postAllowingErrors(url, *fields)
-        if (json.has("error")) throw IOException(json.optString("error_description", json.optString("error")))
+        if (json.has("error")) {
+            val error = json.optString("error")
+            if (error == "invalid_grant") throw SignInExpiredException(json.optString("error_description", error))
+            throw IOException(json.optString("error_description", error))
+        }
         return json
     }
 

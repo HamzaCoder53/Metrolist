@@ -92,6 +92,19 @@
                 android:value="0" />
         </service>
 
+        <!-- Receives a YouTube Music session from the Wavelet phone companion ("Sign in on phone"). -->
+        <service
+            android:name=".account.SessionReceiverService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/wavelet/session"
+                    android:scheme="wear" />
+            </intent-filter>
+        </service>
+
         <!-- Resumes downloads when the Wi-Fi / charging requirements are met. -->
         <service
             android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService"
