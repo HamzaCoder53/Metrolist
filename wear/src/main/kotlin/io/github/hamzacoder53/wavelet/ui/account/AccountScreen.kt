@@ -25,7 +25,6 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import io.github.hamzacoder53.wavelet.R
 import io.github.hamzacoder53.wavelet.WaveletApplication
-import io.github.hamzacoder53.wavelet.account.AccountMode
 import io.github.hamzacoder53.wavelet.ui.CenteredText
 import kotlinx.coroutines.launch
 
@@ -33,7 +32,6 @@ import kotlinx.coroutines.launch
 fun AccountScreen(
     onPhoneSignIn: () -> Unit,
     onWebSignIn: () -> Unit,
-    onCodeSignIn: () -> Unit,
     onOpenLibrary: () -> Unit,
 ) {
     val app = LocalContext.current.applicationContext as WaveletApplication
@@ -53,7 +51,7 @@ fun AccountScreen(
                 item { CenteredText(stringResource(R.string.sign_in_expired)) }
                 item {
                     Button(
-                        onClick = if (state.mode == AccountMode.CODE) onCodeSignIn else onPhoneSignIn,
+                        onClick = onPhoneSignIn,
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text(stringResource(R.string.sign_in_again)) },
                     )
@@ -81,28 +79,10 @@ fun AccountScreen(
                         )
                     }
                 }
-                item {
-                    FilledTonalButton(
-                        onClick = onCodeSignIn,
-                        enabled = account.codeSignInAvailable,
-                        modifier = Modifier.fillMaxWidth(),
-                        icon = { Icon(painterResource(R.drawable.ic_info), contentDescription = null) },
-                        label = { Text(stringResource(R.string.sign_in_with_code)) },
-                        secondaryLabel = {
-                            Text(
-                                stringResource(
-                                    if (account.codeSignInAvailable) R.string.sign_in_with_code_detail else R.string.not_set_up,
-                                ),
-                            )
-                        },
-                    )
-                }
             } else {
                 item {
                     CenteredText(
-                        state.name ?: stringResource(
-                            if (state.mode == AccountMode.WEB) R.string.signed_in_full else R.string.signed_in_with_code,
-                        ),
+                        state.name ?: stringResource(R.string.signed_in_full),
                     )
                 }
                 item {

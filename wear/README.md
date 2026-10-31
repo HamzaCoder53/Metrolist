@@ -73,14 +73,9 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
     with matching signatures.
 - **Sign-in expired:** if a saved sign-in stops working, Account and Your library show
   "Your sign-in expired" with a **Sign in again** button. Your last synced library stays visible.
-- **Account** (Home → Account) also has two more ways to sign in:
-  - **Sign in on watch:** Google's sign-in page opens on the watch, like Metrolist's
-    login. It gives you your full YouTube Music account. It's only shown if the watch has a
-    WebView; many Wear OS watches, including the emulator, don't.
-  - **Sign in with a code:** the watch shows a short code. You enter it at
-    google.com/device on any phone or computer. This uses Google's official device sign-in
-    and the read-only YouTube Data API, and syncs liked songs and playlists. It needs an
-    OAuth client in the build (see below).
+- **Sign in on watch** (Home → Account): Google's sign-in page opens on the watch, like
+  Metrolist's login. It gives you your full YouTube Music account. It's only shown if the watch
+  has a WebView; many Wear OS watches, including the emulator, don't.
 - **Your library:** your liked songs and playlists, with **Play**, **Download liked songs**
   and **Sync now**. The last sync is saved, so the list still shows offline.
 - **Synced lyrics:** tap the lyrics button on Now Playing. The current line replaces the
@@ -103,8 +98,7 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
   playlists open their page. They're personalised with a full-account sign-in, and hidden while
   offline.
 - **Playlists** (Home → Playlists): your Liked songs and playlists. The **Show uploaded music**
-  switch adds the songs you've uploaded to YouTube Music. Uploads need **Sign in on phone** or
-  **Sign in on watch**, because the YouTube Data API behind code sign-in can't see them.
+  switch adds the songs you've uploaded to YouTube Music.
 - **Autoplay:** when the last song in your queue starts, Wavelet adds about 15 similar songs
   (YouTube Music's "up next" for that song). Turn it off in Settings → Playback.
 - **Volume normalization:** turns loud songs down to YouTube's reference level, using each
@@ -113,21 +107,6 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 - **Skip silence:** off by default; turn it on in Settings → Playback.
 - **Sleep timer** (Home → Sleep timer): 15, 30, 45, 60 or 90 minutes, or the end of the
   current song. The time left shows on the Home row.
-
-### Setting up "Sign in with a code"
-
-1. In Google Cloud Console, open a project and enable the **YouTube Data API v3**.
-2. Configure the OAuth consent screen: external, in testing, with your Google account as
-   a test user.
-3. Create an OAuth client of type **TVs and Limited Input devices**.
-4. Save its ID and secret outside the repo, in `~/.android/wavelet-oauth.properties`:
-
-   ```properties
-   clientId=YOUR_CLIENT_ID.apps.googleusercontent.com
-   clientSecret=YOUR_CLIENT_SECRET
-   ```
-
-5. Rebuild. Without this file, the option shows "Not set up in this build".
 
 ## Build
 
@@ -144,9 +123,7 @@ Every release on https://github.com/HamzaCoder53/Metrolist/releases has two APKs
 - `Wavelet-phone-<version>.apk`: install it on the phone you've paired with the watch. It's only
   needed for **Sign in on phone**.
 
-GitHub builds don't include **Sign in with a code**. That option needs a Google Cloud OAuth client
-in testing mode, which only works for its listed test users. Use **Sign in on phone** or
-**Sign in on watch** instead.
+GitHub and Google Play builds are the same app with the same features.
 
 ## Publish to Play internal testing
 

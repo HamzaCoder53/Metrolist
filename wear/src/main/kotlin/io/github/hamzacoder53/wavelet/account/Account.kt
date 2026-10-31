@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.webkit.CookieManager
 import com.metrolist.innertube.YouTube
-import io.github.hamzacoder53.wavelet.BuildConfig
 import io.github.hamzacoder53.wavelet.Settings
 import io.github.hamzacoder53.wavelet.session.YouTubeSession
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,9 +15,6 @@ import timber.log.Timber
 enum class AccountMode {
     /** YouTube Music web session (signed in on the watch, or sent from the phone): full account, like Metrolist. */
     WEB,
-
-    /** Signed in with a code (OAuth device flow): liked songs and playlists via the YouTube Data API. */
-    CODE,
 }
 
 /** [expired]: the saved sign-in stopped working (e.g. Google expired it); the user must sign in again. */
@@ -28,14 +24,16 @@ data class AccountState(val mode: AccountMode?, val name: String?, val expired: 
 
 /** Which sign-in is active, and applying/clearing it. */
 class Account(private val context: Context, private val settings: Settings) {
+    init {
+        // "Sign in with a code" was removed in 0.5.0; those users sign in again another way.
+        if (settings.accountMode == "CODE") settings.clearAccount()
+    }
+
     private val _state =
         MutableStateFlow(
             AccountState(settings.accountMode?.let { runCatching { AccountMode.valueOf(it) }.getOrNull() }, settings.accountName),
         )
     val state: StateFlow<AccountState> = _state.asStateFlow()
-
-    /** Code sign-in needs an OAuth client compiled in from a local file; see wear/README.md. */
-    val codeSignInAvailable: Boolean get() = BuildConfig.OAUTH_CLIENT_ID.isNotEmpty()
 
     /** Sign-in on the watch needs a working WebView, which many Wear OS watches don't have. */
     val webSignInAvailable: Boolean by lazy {
@@ -77,14 +75,6 @@ class Account(private val context: Context, private val settings: Settings) {
         _state.value = AccountState(AccountMode.WEB, info.name)
         Timber.i("Signed in with a YouTube Music session")
         return info.name
-    }
-
-    fun completeCodeSignIn(refreshToken: String, name: String?) {
-        settings.oauthRefreshToken = refreshToken
-        settings.accountName = name
-        settings.accountMode = AccountMode.CODE.name
-        _state.value = AccountState(AccountMode.CODE, name)
-        Timber.i("Signed in with code")
     }
 
     /** The saved sign-in no longer works; keep the cached library but ask the user to sign in again. */

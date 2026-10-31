@@ -23,7 +23,6 @@ import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import io.github.hamzacoder53.wavelet.ui.account.AccountScreen
-import io.github.hamzacoder53.wavelet.ui.account.CodeSignInScreen
 import io.github.hamzacoder53.wavelet.ui.account.PhoneSignInScreen
 import io.github.hamzacoder53.wavelet.ui.account.PlaylistsScreen
 import io.github.hamzacoder53.wavelet.ui.account.WebSignInScreen
@@ -42,7 +41,6 @@ object Routes {
     const val ACCOUNT = "account"
     const val WEB_SIGN_IN = "sign_in/web"
     const val PHONE_SIGN_IN = "sign_in/phone"
-    const val CODE_SIGN_IN = "sign_in/code"
     const val YOUR_LIBRARY = "your_library"
     const val SLEEP_TIMER = "sleep_timer"
     const val PLAYLISTS = "playlists"
@@ -204,7 +202,6 @@ fun WaveletApp(
                     AccountScreen(
                         onPhoneSignIn = { navController.navigate(Routes.PHONE_SIGN_IN) },
                         onWebSignIn = { navController.navigate(Routes.WEB_SIGN_IN) },
-                        onCodeSignIn = { navController.navigate(Routes.CODE_SIGN_IN) },
                         onOpenLibrary = { navController.navigate(Routes.YOUR_LIBRARY) },
                     )
                 }
@@ -213,7 +210,6 @@ fun WaveletApp(
                 }
                 composable(Routes.PHONE_SIGN_IN) { PhoneSignInScreen(onDone = afterSignIn) }
                 composable(Routes.WEB_SIGN_IN) { WebSignInScreen(onDone = afterSignIn) }
-                composable(Routes.CODE_SIGN_IN) { CodeSignInScreen(onDone = afterSignIn) }
                 composable(Routes.YOUR_LIBRARY) {
                     YourLibraryScreen(
                         onPlay = playSongs,

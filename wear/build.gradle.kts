@@ -16,16 +16,6 @@ val uploadSigning =
         file(path).takeIf { it.isFile }?.inputStream()?.use(::load)
     }
 
-// OAuth client for "Sign in with a code" (TVs and Limited Input devices type); kept outside the repo.
-// Without it the code sign-in option is hidden. Override with WAVELET_OAUTH_PROPERTIES.
-val oauthClient =
-    Properties().apply {
-        val path =
-            System.getenv("WAVELET_OAUTH_PROPERTIES")
-                ?: "${System.getProperty("user.home")}/.android/wavelet-oauth.properties"
-        file(path).takeIf { it.isFile }?.inputStream()?.use(::load)
-    }
-
 // Play service-account key (shared with Tumbler); override with WAVELET_PLAY_CREDENTIALS.
 val playCredentials =
     file(
@@ -47,10 +37,8 @@ android {
         applicationId = "io.github.hamzacoder53.wavelet"
         minSdk = 30
         targetSdk = 36
-        versionCode = 9
-        versionName = "0.4.3"
-        buildConfigField("String", "OAUTH_CLIENT_ID", "\"${oauthClient.getProperty("clientId", "")}\"")
-        buildConfigField("String", "OAUTH_CLIENT_SECRET", "\"${oauthClient.getProperty("clientSecret", "")}\"")
+        versionCode = 10
+        versionName = "0.5.0"
     }
 
     buildFeatures {

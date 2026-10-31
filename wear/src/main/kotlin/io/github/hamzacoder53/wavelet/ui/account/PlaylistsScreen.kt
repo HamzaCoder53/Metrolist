@@ -121,9 +121,7 @@ fun PlaylistsScreen(
                     label = { Text(stringResource(R.string.show_uploaded_music)) },
                 )
             }
-            if (accountState.mode == AccountMode.CODE) {
-                item { CenteredText(stringResource(R.string.uploads_need_full_sign_in)) }
-            } else if (showUploads) {
+            if (showUploads) {
                 if (snapshot.uploads.isEmpty()) {
                     item { CenteredText(stringResource(if (syncing) R.string.syncing else R.string.no_uploads)) }
                 } else {

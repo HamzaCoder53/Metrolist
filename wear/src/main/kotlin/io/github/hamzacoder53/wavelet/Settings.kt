@@ -49,10 +49,6 @@ class Settings(context: Context) {
         get() = prefs.getString(KEY_AUTH_USER, null) ?: "0"
         set(value) = prefs.edit { putString(KEY_AUTH_USER, value) }
 
-    var oauthRefreshToken: String?
-        get() = prefs.getString(KEY_REFRESH_TOKEN, null)
-        set(value) = prefs.edit { putString(KEY_REFRESH_TOKEN, value) }
-
     /** When the queue runs out, keep playing similar songs (YouTube Music radio). */
     var autoplay: Boolean
         get() = prefs.getBoolean(KEY_AUTOPLAY, true)
@@ -108,6 +104,7 @@ class Settings(context: Context) {
         const val KEY_COOKIE = "innertube_cookie"
         const val KEY_DATA_SYNC_ID = "data_sync_id"
         const val KEY_AUTH_USER = "auth_user"
+        /** Left over from the removed code sign-in; still cleared on sign-out. */
         const val KEY_REFRESH_TOKEN = "oauth_refresh_token"
         const val KEY_SHOW_LYRICS = "show_lyrics"
         const val KEY_AUTOPLAY = "autoplay"

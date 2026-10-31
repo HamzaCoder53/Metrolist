@@ -35,15 +35,10 @@ data class LibrarySnapshot(
  */
 class AccountLibrary(context: Context, private val settings: Settings, private val account: Account) {
     private val file = File(context.filesDir, "account_library.json")
-    private val deviceAuth = DeviceCodeAuth()
     private val mutex = Mutex()
-    private var accessToken: String? = null
-    private var accessTokenExpiry = 0L
 
-    private val _snapshot = MutableStateFlow(load())
+    private val _snapshot = MutableStateFlow(if (account.state.value.signedIn) load() else LibrarySnapshot())
     val snapshot: StateFlow<LibrarySnapshot> = _snapshot.asStateFlow()
-
-    private val dataApi = YouTubeDataApi(accessToken = ::validAccessToken)
 
     suspend fun sync(): Result<Unit> =
         mutex.withLock {
@@ -51,49 +46,38 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
                 val fresh =
                     when (account.state.value.mode) {
                         AccountMode.WEB -> syncInnerTube()
-                        AccountMode.CODE -> syncDataApi()
                         null -> LibrarySnapshot()
                     }
                 _snapshot.value = fresh
                 withContext(Dispatchers.IO) { save(fresh) }
             }.onFailure { error ->
                 Timber.w(error, "Library sync failed")
-                if (isExpiredSignIn(error)) account.markExpired()
+                if (isExpiredSignIn()) account.markExpired()
             }
         }
 
     /**
-     * Code sign-in: Google says invalid_grant / 401. Web session: YouTube rejects the account
-     * lookup while a public request still works (so being offline isn't mistaken for expiry).
+     * YouTube rejects the account lookup while a public request still works
+     * (so being offline isn't mistaken for expiry).
      */
-    private suspend fun isExpiredSignIn(error: Throwable): Boolean =
-        when (account.state.value.mode) {
-            AccountMode.CODE -> error is SignInExpiredException
-            AccountMode.WEB -> YouTube.accountInfo().isFailure && YouTube.visitorData().isSuccess
-            null -> false
-        }
+    private suspend fun isExpiredSignIn(): Boolean =
+        account.state.value.signedIn && YouTube.accountInfo().isFailure && YouTube.visitorData().isSuccess
 
-    /** Songs of one library playlist, using the matching API. */
-    suspend fun playlistSongs(playlistId: String): List<SongItem> =
-        when (account.state.value.mode) {
-            AccountMode.CODE -> dataApi.playlistSongs(playlistId)
-            else -> {
-                val page = YouTube.playlist(playlistId).getOrThrow()
-                val songs = page.songs.toMutableList()
-                var continuation = page.songsContinuation ?: page.continuation
-                while (continuation != null && songs.size < 200) {
-                    val next = YouTube.playlistContinuation(continuation).getOrNull() ?: break
-                    songs += next.songs
-                    continuation = next.continuation
-                }
-                songs.distinctBy { it.id }
-            }
+    suspend fun playlistSongs(playlistId: String): List<SongItem> {
+        val page = YouTube.playlist(playlistId).getOrThrow()
+        val songs = page.songs.toMutableList()
+        var continuation = page.songsContinuation ?: page.continuation
+        while (continuation != null && songs.size < 200) {
+            val next = YouTube.playlistContinuation(continuation).getOrNull() ?: break
+            songs += next.songs
+            continuation = next.continuation
         }
+        return songs.distinctBy { it.id }
+    }
 
     fun clear() {
         _snapshot.value = LibrarySnapshot()
         file.delete()
-        accessToken = null
     }
 
     /** Uploaded songs need a playback hint (InnerTubeX ContentHints.isUploaded) to resolve. */
@@ -121,28 +105,6 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
             continuation = next.continuation
         }
         return songs.distinctBy { it.id }.take(MAX_UPLOADS)
-    }
-
-    private suspend fun syncDataApi(): LibrarySnapshot =
-        LibrarySnapshot(
-            likedSongs = dataApi.likedSongs(),
-            playlists = dataApi.playlists().map { LibraryPlaylist(it.id, it.title, it.thumbnail, it.count?.let { n -> "$n songs" }) },
-            syncedAt = System.currentTimeMillis(),
-        )
-
-    private suspend fun validAccessToken(): String {
-        accessToken?.takeIf { System.currentTimeMillis() < accessTokenExpiry }?.let { return it }
-        val refreshToken = settings.oauthRefreshToken ?: error("Not signed in with a code")
-        val tokens = deviceAuth.refresh(refreshToken)
-        accessToken = tokens.accessToken
-        accessTokenExpiry = System.currentTimeMillis() + (tokens.expiresInSeconds - 60) * 1000L
-        return tokens.accessToken
-    }
-
-    /** First access token after code sign-in, so the first sync doesn't need a refresh. */
-    fun primeAccessToken(token: String, expiresInSeconds: Int) {
-        accessToken = token
-        accessTokenExpiry = System.currentTimeMillis() + (expiresInSeconds - 60) * 1000L
     }
 
     private fun List<SongItem>.toJson() =

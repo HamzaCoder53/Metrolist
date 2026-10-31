@@ -76,7 +76,6 @@
     <string name="no_playlists">No playlists yet</string>
     <string name="uploaded_music">Uploaded music</string>
     <string name="show_uploaded_music">Show uploaded music</string>
-    <string name="uploads_need_full_sign_in">Uploaded music needs \"Sign in on phone\" or \"Sign in on watch\".</string>
     <string name="no_uploads">No uploaded songs</string>
     <string name="recommended">Recommended</string>
     <string name="sign_in_on_phone">Sign in on phone</string>
@@ -91,15 +90,9 @@
     <string name="sign_in_again">Sign in again</string>
     <string name="sign_in_on_watch">Sign in on watch</string>
     <string name="sign_in_on_watch_detail">Full YouTube Music account</string>
-    <string name="sign_in_with_code">Sign in with a code</string>
-    <string name="sign_in_with_code_detail">Approve on your phone</string>
-    <string name="not_set_up">Not set up in this build</string>
     <string name="signing_in">Signing in…</string>
     <string name="sign_in_failed">Sign-in didn\'t finish. Try again.</string>
-    <string name="code_sign_in_go_to">On your phone, go to %1$s and enter</string>
-    <string name="code_sign_in_waiting">Waiting for approval…</string>
     <string name="signed_in_on_watch">Signed in on watch</string>
-    <string name="signed_in_with_code">Signed in with a code</string>
     <string name="your_library">Your library</string>
     <string name="liked_songs">Liked songs</string>
     <string name="download_liked">Download liked songs</string>
