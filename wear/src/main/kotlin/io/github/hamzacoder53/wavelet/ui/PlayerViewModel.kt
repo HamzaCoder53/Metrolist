@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.media.AudioManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -79,7 +80,17 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private val listener =
         object : Player.Listener {
-            override fun onEvents(player: Player, events: Player.Events) = refresh(player)
+            override fun onEvents(player: Player, events: Player.Events) {
+                refresh(player)
+                if (events.containsAny(
+                        Player.EVENT_TIMELINE_CHANGED,
+                        Player.EVENT_MEDIA_ITEM_TRANSITION,
+                        Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+                    )
+                ) {
+                    refreshQueue(player)
+                }
+            }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 if (_showLyrics.value && mediaItem != null) loadLyrics(mediaItem) else app.lyrics.clear()
@@ -92,6 +103,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             controller = MediaController.Builder(application, token).buildAsync().await().also {
                 it.addListener(listener)
                 refresh(it)
+                refreshQueue(it)
             }
         }
         viewModelScope.launch {
@@ -246,28 +258,29 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) to
             audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
 
-    private fun refresh(player: Player) {
-        val count = player.mediaItemCount
-        val currentIdx = player.currentMediaItemIndex
-        val queueItems =
-            if (count > 0 && currentIdx in 0 until count) {
-                (currentIdx until count).map { i ->
-                    val item = player.getMediaItemAt(i)
-                    val md = item.mediaMetadata
-                    QueueEntry(
-                        timelineIndex = i,
-                        mediaId = item.mediaId,
-                        title = md.title?.toString() ?: item.mediaId,
-                        artist = md.artist?.toString(),
-                        thumbnail = md.artworkUri?.toString(),
-                        isCurrent = i == currentIdx,
-                    )
-                }
-            } else {
-                emptyList()
-            }
-        _queue.value = queueItems
+    /** Upcoming songs in play order (follows shuffle); only rebuilt when the queue or its order changes. */
+    private fun refreshQueue(player: Player) {
+        val timeline = player.currentTimeline
+        val entries = mutableListOf<QueueEntry>()
+        var index = player.currentMediaItemIndex
+        while (index != C.INDEX_UNSET && index in 0 until timeline.windowCount && entries.size < timeline.windowCount) {
+            val item = player.getMediaItemAt(index)
+            val md = item.mediaMetadata
+            entries +=
+                QueueEntry(
+                    timelineIndex = index,
+                    mediaId = item.mediaId,
+                    title = md.title?.toString() ?: item.mediaId,
+                    artist = md.artist?.toString(),
+                    thumbnail = md.artworkUri?.toString(),
+                    isCurrent = entries.isEmpty(),
+                )
+            index = timeline.getNextWindowIndex(index, Player.REPEAT_MODE_OFF, player.shuffleModeEnabled)
+        }
+        _queue.value = entries
+    }
 
+    private fun refresh(player: Player) {
         _state.update {
             it.copy(
                 mediaItem = player.currentMediaItem,

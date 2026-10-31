@@ -87,7 +87,8 @@ class PlaybackService : MediaSessionService() {
         val reporter =
             YouTubeHistoryReporter(
                 player = player,
-                scope = scope,
+                // Media3 posts final stats after release, i.e. after the service scope is cancelled.
+                scope = CoroutineScope(app.appScope.coroutineContext + Dispatchers.Main),
                 thresholdMs = { 30_000L },
                 isEnabled = {
                     app.settings.saveListeningHistory &&

@@ -1,7 +1,5 @@
 package io.github.hamzacoder53.wavelet.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -11,10 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -24,8 +20,6 @@ import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.AlertDialog
 import androidx.wear.compose.material3.AlertDialogDefaults
 import androidx.wear.compose.material3.FilledTonalButton
-import androidx.wear.compose.material3.Icon
-import androidx.wear.compose.material3.IconButton
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
@@ -47,45 +41,27 @@ fun QueueScreen(player: PlayerViewModel) {
             if (queue.isEmpty()) {
                 item { CenteredText(stringResource(R.string.queue_empty)) }
             } else {
-                itemsIndexed(queue, key = { index, _ -> index }) { _, item ->
-                    Row(
+                itemsIndexed(queue, key = { _, item -> "${item.timelineIndex}:${item.mediaId}" }) { _, item ->
+                    FilledTonalButton(
+                        onClick = { player.playQueueIndex(item.timelineIndex) },
+                        onLongClick = { if (!item.isCurrent) pendingRemove = item },
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        FilledTonalButton(
-                            onClick = { player.playQueueIndex(item.timelineIndex) },
-                            onLongClick = { pendingRemove = item },
-                            modifier = Modifier.weight(1f),
-                            icon = {
-                                AsyncImage(
-                                    model = item.thumbnail?.sizedThumbnail(THUMBNAIL_PX),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(32.dp).clip(CircleShape),
-                                )
-                            },
-                            label = { Text(item.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                            secondaryLabel = {
-                                Text(
-                                    if (item.isCurrent) stringResource(R.string.now_playing) else item.artist.orEmpty(),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            },
-                        )
-                        if (!item.isCurrent) {
-                            IconButton(
-                                onClick = { player.removeFromQueue(item.timelineIndex) },
-                                modifier = Modifier.size(32.dp),
-                            ) {
-                                Icon(
-                                    painterResource(R.drawable.ic_remove),
-                                    contentDescription = stringResource(R.string.delete),
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
-                        }
-                    }
+                        icon = {
+                            AsyncImage(
+                                model = item.thumbnail?.sizedThumbnail(THUMBNAIL_PX),
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp).clip(CircleShape),
+                            )
+                        },
+                        label = { Text(item.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        secondaryLabel = {
+                            Text(
+                                if (item.isCurrent) stringResource(R.string.now_playing) else item.artist.orEmpty(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
+                    )
                 }
             }
         }

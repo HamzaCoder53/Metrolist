@@ -1,13 +1,10 @@
 package io.github.hamzacoder53.wavelet.ui
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -67,24 +64,21 @@ fun ArtistScreen(
                     }
 
                     if (current.topSongs.isNotEmpty()) {
-                        item(key = "top_actions") {
-                            Row(
+                        item(key = "play") {
+                            Button(
+                                onClick = { onPlay(current.topSongs, 0) },
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                            ) {
-                                Button(
-                                    onClick = { onPlay(current.topSongs, 0) },
-                                    modifier = Modifier.weight(1f),
-                                    icon = { Icon(painterResource(R.drawable.ic_play), contentDescription = null) },
-                                    label = { Text(stringResource(R.string.play), maxLines = 1) },
-                                )
-                                FilledTonalButton(
-                                    onClick = { onPlay(current.topSongs.shuffled(), 0) },
-                                    modifier = Modifier.weight(1f),
-                                    icon = { Icon(painterResource(R.drawable.ic_shuffle), contentDescription = null) },
-                                    label = { Text(stringResource(R.string.shuffle), maxLines = 1) },
-                                )
-                            }
+                                icon = { Icon(painterResource(R.drawable.ic_play), contentDescription = null) },
+                                label = { Text(stringResource(R.string.play)) },
+                            )
+                        }
+                        item(key = "shuffle") {
+                            FilledTonalButton(
+                                onClick = { onPlay(current.topSongs.shuffled(), 0) },
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = { Icon(painterResource(R.drawable.ic_shuffle), contentDescription = null) },
+                                label = { Text(stringResource(R.string.shuffle)) },
+                            )
                         }
                     }
 

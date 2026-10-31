@@ -54,11 +54,11 @@ fun SongOptionsScreen(
     val artist = md?.artist?.toString().orEmpty()
     val artistBrowseId = currentMediaItem?.artistBrowseId
 
-    var likeError by remember { mutableStateOf<String?>(null) }
+    var likeFailed by remember { mutableStateOf(false) }
     var isUpdatingLike by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentId) {
-        likeError = null
+        likeFailed = false
         isUpdatingLike = false
     }
 
@@ -70,7 +70,7 @@ fun SongOptionsScreen(
             if (currentMediaItem == null || currentId == null) {
                 item { CenteredText(stringResource(R.string.nothing_playing)) }
             } else {
-                // A2. Like / Unlike (only when signed in)
+                // Like / Unlike (only when signed in)
                 if (accountState.signedIn) {
                     val isLiked = librarySnapshot.likedSongs.any { it.id == currentId }
                     item {
@@ -78,7 +78,7 @@ fun SongOptionsScreen(
                             onClick = {
                                 if (isUpdatingLike) return@FilledTonalButton
                                 isUpdatingLike = true
-                                likeError = null
+                                likeFailed = false
                                 val targetLiked = !isLiked
                                 val songToUpdate =
                                     librarySnapshot.likedSongs.firstOrNull { it.id == currentId }
@@ -96,7 +96,7 @@ fun SongOptionsScreen(
                                         }
                                         .onFailure { error ->
                                             Timber.w(error, "Failed to %s song %s", if (targetLiked) "like" else "unlike", currentId)
-                                            likeError = context.getString(R.string.like_failed)
+                                            likeFailed = true
                                         }
                                     isUpdatingLike = false
                                 }
@@ -111,12 +111,12 @@ fun SongOptionsScreen(
                             label = {
                                 Text(stringResource(if (isLiked) R.string.unlike else R.string.like))
                             },
-                            secondaryLabel = likeError?.let { { Text(it) } },
+                            secondaryLabel = if (likeFailed) ({ Text(stringResource(R.string.like_failed)) }) else null,
                         )
                     }
                 }
 
-                // A3. Up next -> queue screen
+                // Up next -> queue screen
                 item {
                     FilledTonalButton(
                         onClick = onQueue,
@@ -153,7 +153,7 @@ fun SongOptionsScreen(
                     )
                 }
 
-                // A4. Start radio
+                // Start radio
                 item {
                     FilledTonalButton(
                         onClick = {
@@ -169,7 +169,7 @@ fun SongOptionsScreen(
                     )
                 }
 
-                // B1 hook: Go to artist (only if current song has an artist browse id)
+                // Only when the current song carries an artist browse id.
                 if (artistBrowseId != null) {
                     item {
                         FilledTonalButton(
