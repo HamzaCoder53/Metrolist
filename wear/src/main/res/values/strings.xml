@@ -113,7 +113,7 @@
     <string name="lyrics_not_found">No synced lyrics</string>
     <string name="tile_label">Wavelet</string>
     <string name="tile_description">Now playing and recent music</string>
-    <string name="complication_label">Wavelet now playing</string>
+    <string name="complication_label">Wavelet play/pause</string>
     <string name="recent_music">Recent</string>
     <string name="sleep_timer">Sleep timer</string>
     <string name="minutes">%1$d minutes</string>

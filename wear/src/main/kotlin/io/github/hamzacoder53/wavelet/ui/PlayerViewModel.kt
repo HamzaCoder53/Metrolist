@@ -100,6 +100,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return canPlay
     }
 
+    val isConnected: Boolean get() = controller != null
+
+    /** Resumes the current queue, or shows the headphones prompt. */
+    fun resume() {
+        if (AudioOutputs.canPlay(getApplication())) controller?.play() else _state.update { it.copy(needsHeadphones = true) }
+    }
+
     fun onHeadphonesConnected() {
         _state.update { it.copy(needsHeadphones = false) }
         controller?.play()

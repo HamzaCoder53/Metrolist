@@ -54,8 +54,11 @@ object Routes {
 }
 
 class MainActivity : ComponentActivity() {
-    /** Song id from a Tile tap ("recent music"), consumed once by the UI. */
+    /** Song id from a Tile or complication tap, consumed once by the UI. */
     private val pendingMediaId = mutableStateOf<String?>(null)
+
+    /** Set by a complication tap that needs the headphones prompt before resuming. */
+    private val pendingResume = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,22 +67,31 @@ class MainActivity : ComponentActivity() {
         ) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0)
         }
-        pendingMediaId.value = intent?.getStringExtra(EXTRA_PLAY_MEDIA_ID)
-        setContent { WaveletApp(pendingMediaId) }
+        readExtras(intent)
+        setContent { WaveletApp(pendingMediaId, pendingResume) }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent.getStringExtra(EXTRA_PLAY_MEDIA_ID)?.let { pendingMediaId.value = it }
+        readExtras(intent)
+    }
+
+    private fun readExtras(intent: Intent?) {
+        intent?.getStringExtra(EXTRA_PLAY_MEDIA_ID)?.let { pendingMediaId.value = it }
+        if (intent?.getBooleanExtra(EXTRA_RESUME, false) == true) pendingResume.value = true
     }
 
     companion object {
         const val EXTRA_PLAY_MEDIA_ID = "play_media_id"
+        const val EXTRA_RESUME = "resume"
     }
 }
 
 @Composable
-fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf(null) }) {
+fun WaveletApp(
+    pendingMediaId: MutableState<String?> = remember { mutableStateOf(null) },
+    pendingResume: MutableState<Boolean> = remember { mutableStateOf(false) },
+) {
     MaterialTheme {
         AppScaffold {
             val navController = rememberSwipeDismissableNavController()
@@ -91,17 +103,16 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
                 val id = pendingMediaId.value ?: return@LaunchedEffect
                 val app = context.applicationContext as io.github.hamzacoder53.wavelet.WaveletApplication
                 val song = app.listeningCache.recentHistory(50).firstOrNull { it.id == id }
-                if (song != null) {
-                    // The media controller connects asynchronously; retry briefly until it's ready.
-                    repeat(20) {
-                        if (player.playItems(listOf(song.toMediaItem()), 0)) {
-                            navController.navigate(Routes.NOW_PLAYING)
-                            return@repeat
-                        }
-                        kotlinx.coroutines.delay(250)
-                    }
+                if (song != null && player.awaitConnected()) {
+                    if (player.playItems(listOf(song.toMediaItem()), 0)) navController.navigate(Routes.NOW_PLAYING)
                 }
                 pendingMediaId.value = null
+            }
+
+            LaunchedEffect(pendingResume.value) {
+                if (!pendingResume.value) return@LaunchedEffect
+                if (player.awaitConnected()) player.resume()
+                pendingResume.value = false
             }
 
             LaunchedEffect(playerState.needsHeadphones) {
@@ -216,4 +227,13 @@ fun WaveletApp(pendingMediaId: MutableState<String?> = remember { mutableStateOf
             }
         }
     }
+}
+
+/** The media controller connects asynchronously; wait briefly for it. */
+private suspend fun PlayerViewModel.awaitConnected(): Boolean {
+    repeat(20) {
+        if (isConnected) return true
+        kotlinx.coroutines.delay(250)
+    }
+    return isConnected
 }

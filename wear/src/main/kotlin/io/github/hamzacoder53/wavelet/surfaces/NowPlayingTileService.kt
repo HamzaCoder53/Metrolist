@@ -1,8 +1,5 @@
 package io.github.hamzacoder53.wavelet.surfaces
 
-import android.content.ComponentName
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import androidx.wear.protolayout.ActionBuilders
 import androidx.wear.protolayout.ColorBuilders.argb
 import androidx.wear.protolayout.DimensionBuilders.dp
@@ -19,16 +16,12 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.github.hamzacoder53.wavelet.R
 import io.github.hamzacoder53.wavelet.WaveletApplication
-import io.github.hamzacoder53.wavelet.playback.AudioOutputs
-import io.github.hamzacoder53.wavelet.playback.PlaybackService
 import io.github.hamzacoder53.wavelet.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.guava.future
-import timber.log.Timber
 
 /** Tile: what's playing with play/pause, plus the two most recent songs (tap to play). */
 class NowPlayingTileService : TileService() {
@@ -52,30 +45,8 @@ class NowPlayingTileService : TileService() {
         super.onDestroy()
     }
 
-    /** Returns whether playback is now (expected to be) playing. Only uses the speaker if the user allowed it. */
-    private suspend fun togglePlayback(): Boolean =
-        runCatching {
-            val token = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-            val controller = MediaController.Builder(this, token).buildAsync().await()
-            try {
-                when {
-                    controller.isPlaying -> {
-                        controller.pause()
-                        false
-                    }
-                    controller.mediaItemCount > 0 && AudioOutputs.canPlay(this) -> {
-                        controller.play()
-                        true
-                    }
-                    else -> false
-                }
-            } finally {
-                controller.release()
-            }
-        }.getOrElse {
-            Timber.w(it, "Tile play/pause failed")
-            false
-        }
+    /** Returns whether playback is now (expected to be) playing. */
+    private suspend fun togglePlayback(): Boolean = SurfacePlayback.toggle(this) == SurfacePlayback.Result.PLAYING
 
     private fun buildTile(nowPlaying: NowPlayingStore.NowPlaying): TileBuilders.Tile {
         val recent =

@@ -89,8 +89,12 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
   Settings → Lyrics.
 - **Tile:** shows what's playing with play/pause, plus your two most recent songs (tap one to
   play it).
-- **Complication:** shows the current song on any watch face that supports text
-  complications. Tap it to open Wavelet.
+- **Complication ("Wavelet play/pause"):** add it to a watch face slot to play and pause from
+  the watch face. Icon slots show a play or pause button; text slots also show the current
+  song. Tapping it pauses or resumes without opening Wavelet. When nothing is queued, it opens
+  Wavelet and plays your most recent song. Without headphones, it opens the "Connect
+  headphones" prompt unless **Play on watch speaker** is on. To add it, long-press the watch
+  face, tap **Edit**, pick a slot and choose Wavelet.
 
 ## Features (Phase 4: watch extras)
 
