@@ -25,8 +25,10 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 - Search by voice or keyboard; results scroll with the crown.
 - Now Playing: play/pause, skip, ±10 s seek and artwork. The crown changes the volume.
 - Background playback with a media notification and a Wear OS Ongoing Activity.
-- Plays only through Bluetooth headphones. Without them, Wavelet opens the Bluetooth
-  picker and starts playing once headphones connect.
+- Plays through Bluetooth headphones by default. Pressing play without them shows a
+  "Connect headphones" prompt with **Open Bluetooth** and a **Play on watch speaker** switch;
+  playback starts once headphones connect or the switch is turned on. The same switch is in
+  Settings → Playback.
 - Low audio quality and small artwork by default, to save battery and data.
 
 ## Features (Phase 2: offline)
