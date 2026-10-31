@@ -55,6 +55,8 @@
     <string name="loading">Loading…</string>
     <string name="load_failed">Couldn\'t load. Check your connection.</string>
     <string name="downloads_section">Downloads</string>
+    <string name="sync_downloaded_playlists">Keep playlists in sync</string>
+    <string name="sync_downloaded_playlists_detail">Follows changes on YouTube Music</string>
     <string name="wifi_only">Wi-Fi only</string>
     <string name="charging_only">Only while charging</string>
     <string name="song_count">%1$d songs</string>

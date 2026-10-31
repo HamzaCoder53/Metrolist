@@ -36,7 +36,12 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 - Search albums and playlists as well as songs (the three filter icons under the search
   buttons).
 - Downloading:
-  - **Download all** on an album or playlist page.
+  - **Download all** on an album or playlist page. Playlists load up to 200 songs.
+  - **Keep playlists in sync** (Settings → Downloads, on by default): downloaded playlists and
+    downloaded liked songs follow YouTube Music. Songs added there are downloaded, songs removed
+    there are deleted, and failed downloads are retried. It runs once a day when Wavelet starts
+    and after every library sync; a failed or empty fetch never deletes anything. Albums aren't
+    checked.
   - The download icon on Now Playing.
   - Long-press a song in search results.
 - **Downloads** library:

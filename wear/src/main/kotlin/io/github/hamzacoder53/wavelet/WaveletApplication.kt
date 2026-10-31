@@ -21,6 +21,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import io.github.hamzacoder53.wavelet.playback.DownloadSync
 import timber.log.Timber
 
 class WaveletApplication : Application(), SingletonImageLoader.Factory {
@@ -47,6 +52,9 @@ class WaveletApplication : Application(), SingletonImageLoader.Factory {
     lateinit var loudness: Loudness
         private set
 
+    lateinit var downloadSync: DownloadSync
+        private set
+
     lateinit var updateChecker: UpdateChecker
         private set
 
@@ -59,6 +67,12 @@ class WaveletApplication : Application(), SingletonImageLoader.Factory {
         listeningCache = ListeningCache(this, settings, downloads.databaseProvider)
         account = Account(this, settings)
         accountLibrary = AccountLibrary(this, settings, account)
+        downloadSync = DownloadSync(settings, downloads, accountLibrary, account.state)
+        appScope.launch {
+            downloads.ready.first { it }
+            downloadSync.syncIfDue()
+            accountLibrary.snapshot.map { it.syncedAt }.distinctUntilChanged().drop(1).collect { downloadSync.sync() }
+        }
         updateChecker = UpdateChecker(this, settings)
         updateChecker.checkOnAppStart(appScope)
         InnerTubeXPlayer.initialize(this)

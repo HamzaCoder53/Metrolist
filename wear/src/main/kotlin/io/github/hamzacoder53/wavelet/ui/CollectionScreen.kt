@@ -64,7 +64,7 @@ fun CollectionScreen(
                     item {
                         val allDownloaded =
                             current.songs.isNotEmpty() &&
-                                current.songs.all { song -> downloaded.any { it.id == song.id } }
+                                current.songs.all { song -> downloaded.any { it.id == song.id && it.isComplete } }
                         FilledTonalButton(
                             onClick = { downloads.download(current.songs, viewModel.id, current.title) },
                             enabled = current.songs.isNotEmpty() && !allDownloaded,

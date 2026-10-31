@@ -202,6 +202,9 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
     companion object {
         /** YouTube Music's "Liked music" auto playlist. */
         const val LIKED_MUSIC_PLAYLIST = "LM"
+
+        /** Collection id of downloaded liked songs. */
+        const val LIKED_COLLECTION_ID = "account:liked"
         private const val UPLOADED_SONGS_BROWSE_ID = "FEmusic_library_privately_owned_tracks"
         private const val MAX_UPLOADS = 300
     }

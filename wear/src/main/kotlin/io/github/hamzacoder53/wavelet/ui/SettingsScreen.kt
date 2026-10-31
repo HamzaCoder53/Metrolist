@@ -45,6 +45,7 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
     var skipSilence by remember { mutableStateOf(settings.skipSilence) }
     var saveListeningHistory by remember { mutableStateOf(settings.saveListeningHistory) }
     var playOnSpeaker by remember { mutableStateOf(settings.playOnSpeaker) }
+    var syncPlaylists by remember { mutableStateOf(settings.syncDownloadedPlaylists) }
     // Re-read size and limit whenever the cached song list changes (after clearing, resizing or playing).
     val cachedSongs by listeningCache.songs.collectAsState()
     val cacheUsed = remember(cachedSongs) { listeningCache.usedBytes() }
@@ -171,6 +172,18 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.charging_only)) },
+                )
+            }
+            item {
+                SwitchButton(
+                    checked = syncPlaylists,
+                    onCheckedChange = {
+                        settings.syncDownloadedPlaylists = it
+                        syncPlaylists = it
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.sync_downloaded_playlists)) },
+                    secondaryLabel = { Text(stringResource(R.string.sync_downloaded_playlists_detail)) },
                 )
             }
 

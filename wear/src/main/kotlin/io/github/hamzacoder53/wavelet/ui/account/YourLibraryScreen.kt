@@ -20,6 +20,7 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import com.metrolist.innertube.models.SongItem
 import io.github.hamzacoder53.wavelet.R
+import io.github.hamzacoder53.wavelet.account.AccountLibrary
 import io.github.hamzacoder53.wavelet.WaveletApplication
 import io.github.hamzacoder53.wavelet.ui.CenteredText
 import io.github.hamzacoder53.wavelet.ui.ItemButton
@@ -71,7 +72,7 @@ fun YourLibraryScreen(
                         onClick = {
                             app.downloads.download(
                                 snapshot.likedSongs,
-                                LIKED_COLLECTION_ID,
+                                AccountLibrary.LIKED_COLLECTION_ID,
                                 app.getString(R.string.liked_songs),
                             )
                         },
@@ -107,4 +108,3 @@ fun YourLibraryScreen(
     }
 }
 
-private const val LIKED_COLLECTION_ID = "account:liked"

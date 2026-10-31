@@ -64,6 +64,15 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(KEY_SKIP_SILENCE, false)
         set(value) = prefs.edit { putBoolean(KEY_SKIP_SILENCE, value) }
 
+    /** Download songs added to (and delete songs removed from) downloaded playlists. */
+    var syncDownloadedPlaylists: Boolean
+        get() = prefs.getBoolean(KEY_SYNC_DOWNLOADED_PLAYLISTS, true)
+        set(value) = prefs.edit { putBoolean(KEY_SYNC_DOWNLOADED_PLAYLISTS, value) }
+
+    var lastDownloadSync: Long
+        get() = prefs.getLong(KEY_LAST_DOWNLOAD_SYNC, 0L)
+        set(value) = prefs.edit { putLong(KEY_LAST_DOWNLOAD_SYNC, value) }
+
     var saveListeningHistory: Boolean
         get() = prefs.getBoolean(KEY_SAVE_LISTENING_HISTORY, true)
         set(value) = prefs.edit { putBoolean(KEY_SAVE_LISTENING_HISTORY, value) }
@@ -154,6 +163,8 @@ class Settings(context: Context) {
         const val KEY_NORMALIZE = "normalize_volume"
         const val KEY_SKIP_SILENCE = "skip_silence"
         const val KEY_SAVE_LISTENING_HISTORY = "save_listening_history"
+        const val KEY_SYNC_DOWNLOADED_PLAYLISTS = "sync_downloaded_playlists"
+        const val KEY_LAST_DOWNLOAD_SYNC = "last_download_sync"
         const val KEY_LAST_UPDATE_CHECK_TIME = "last_update_check_time"
         const val KEY_LATEST_AVAILABLE_VERSION = "latest_available_version"
         const val KEY_LATEST_RELEASE_URL = "latest_release_url"

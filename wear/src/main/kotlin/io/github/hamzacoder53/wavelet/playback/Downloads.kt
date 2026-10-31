@@ -92,6 +92,10 @@ class Downloads(context: Context, private val settings: Settings) {
     private val _songs = MutableStateFlow<List<DownloadedSong>>(emptyList())
     val songs: StateFlow<List<DownloadedSong>> = _songs.asStateFlow()
 
+    /** True once Media3 has loaded the download index, so [songs] reflects what's on disk. */
+    private val _ready = MutableStateFlow(false)
+    val ready: StateFlow<Boolean> = _ready.asStateFlow()
+
     /** True while the Wi-Fi-only / charging-only rules are holding downloads back. */
     private val _waitingForRequirements = MutableStateFlow(false)
     val waitingForRequirements: StateFlow<Boolean> = _waitingForRequirements.asStateFlow()
@@ -109,6 +113,7 @@ class Downloads(context: Context, private val settings: Settings) {
                 object : DownloadManager.Listener {
                     override fun onInitialized(downloadManager: DownloadManager) {
                         refresh()
+                        _ready.value = true
                         resumePending()
                     }
 
