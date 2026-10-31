@@ -1,5 +1,6 @@
 package io.github.hamzacoder53.wavelet.playback
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
@@ -54,6 +55,7 @@ class PlaybackService : MediaSessionService() {
             }
         }
 
+    @SuppressLint("RestrictedApi") // setSuitableOutputChecker, see SpeakerAwareOutputChecker
     override fun onCreate() {
         super.onCreate()
         dataSource = YouTubeDataSource(this)
@@ -72,8 +74,9 @@ class PlaybackService : MediaSessionService() {
                 ).setHandleAudioBecomingNoisy(true)
                 .setWakeMode(C.WAKE_MODE_NETWORK)
                 // On Wear OS this blocks the built-in speaker and opens the system output
-                // switcher when play is pressed without headphones.
-                .setSuppressPlaybackOnUnsuitableOutput(!AudioOutputs.speakerAllowed)
+                // switcher when play is pressed without headphones, unless speaker playback is on.
+                .setSuppressPlaybackOnUnsuitableOutput(true)
+                .setSuitableOutputChecker(SpeakerAwareOutputChecker(app.settings))
                 .build()
         player.skipSilenceEnabled = app.settings.skipSilence
         player.addListener(playerListener(player))

@@ -87,14 +87,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /** Queues [songs] from [startIndex]; playback only starts once headphones are connected. */
+    /** Queues [songs] from [startIndex]; playback waits for headphones unless speaker playback is on. */
     fun playSongs(songs: List<SongItem>, startIndex: Int): Boolean = playItems(songs.map { it.toMediaItem() }, startIndex)
 
     fun playItems(items: List<MediaItem>, startIndex: Int): Boolean {
         val player = controller ?: return false
         player.setMediaItems(items, startIndex, 0)
         player.prepare()
-        val canPlay = AudioOutputs.hasHeadphones(getApplication())
+        val canPlay = AudioOutputs.canPlay(getApplication())
         if (canPlay) player.play()
         _state.update { it.copy(needsHeadphones = !canPlay) }
         return canPlay
@@ -109,7 +109,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         val player = controller ?: return
         if (player.isPlaying) {
             player.pause()
-        } else if (AudioOutputs.hasHeadphones(getApplication())) {
+        } else if (AudioOutputs.canPlay(getApplication())) {
             player.play()
         } else {
             _state.update { it.copy(needsHeadphones = true) }

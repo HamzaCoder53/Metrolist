@@ -52,7 +52,7 @@ class NowPlayingTileService : TileService() {
         super.onDestroy()
     }
 
-    /** Returns whether playback is now (expected to be) playing. Never starts the speaker. */
+    /** Returns whether playback is now (expected to be) playing. Only uses the speaker if the user allowed it. */
     private suspend fun togglePlayback(): Boolean =
         runCatching {
             val token = SessionToken(this, ComponentName(this, PlaybackService::class.java))
@@ -63,7 +63,7 @@ class NowPlayingTileService : TileService() {
                         controller.pause()
                         false
                     }
-                    controller.mediaItemCount > 0 && AudioOutputs.hasHeadphones(this) -> {
+                    controller.mediaItemCount > 0 && AudioOutputs.canPlay(this) -> {
                         controller.play()
                         true
                     }

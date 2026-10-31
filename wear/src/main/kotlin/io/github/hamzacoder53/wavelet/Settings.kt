@@ -78,6 +78,11 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(KEY_SHOW_UPLOADS, false)
         set(value) = prefs.edit { putBoolean(KEY_SHOW_UPLOADS, value) }
 
+    /** Play through the watch speaker when no headphones are connected. */
+    var playOnSpeaker: Boolean
+        get() = prefs.getBoolean(KEY_PLAY_ON_SPEAKER, false)
+        set(value) = prefs.edit { putBoolean(KEY_PLAY_ON_SPEAKER, value) }
+
     var showLyrics: Boolean
         get() = prefs.getBoolean(KEY_SHOW_LYRICS, true)
         set(value) = prefs.edit { putBoolean(KEY_SHOW_LYRICS, value) }
@@ -109,6 +114,7 @@ class Settings(context: Context) {
         const val KEY_NORMALIZE = "normalize_volume"
         const val KEY_SKIP_SILENCE = "skip_silence"
         const val KEY_SHOW_UPLOADS = "show_uploads"
+        const val KEY_PLAY_ON_SPEAKER = "play_on_speaker"
     }
 }
 

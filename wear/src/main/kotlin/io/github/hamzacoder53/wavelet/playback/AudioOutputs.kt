@@ -8,12 +8,13 @@ import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
 import io.github.hamzacoder53.wavelet.BuildConfig
+import io.github.hamzacoder53.wavelet.settings
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-/** Wear OS audio output helpers: Wavelet never plays through the watch speaker. */
+/** Wear OS audio output helpers: the watch speaker is only used when the user turns it on. */
 object AudioOutputs {
     private val headphoneTypes =
         buildSet {
@@ -39,6 +40,8 @@ object AudioOutputs {
             context.getSystemService(AudioManager::class.java)
                 .getDevices(AudioManager.GET_DEVICES_OUTPUTS)
                 .any { it.type in headphoneTypes }
+
+    fun canPlay(context: Context): Boolean = context.settings.playOnSpeaker || hasHeadphones(context)
 
     fun headphonesConnected(context: Context): Flow<Boolean> =
         callbackFlow {

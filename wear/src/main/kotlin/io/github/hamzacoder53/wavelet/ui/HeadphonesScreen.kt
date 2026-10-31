@@ -3,9 +3,11 @@ package io.github.hamzacoder53.wavelet.ui
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -16,21 +18,22 @@ import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.ScreenScaffold
+import androidx.wear.compose.material3.SwitchButton
 import androidx.wear.compose.material3.Text
 import io.github.hamzacoder53.wavelet.R
 import io.github.hamzacoder53.wavelet.playback.AudioOutputs
+import io.github.hamzacoder53.wavelet.settings
 
-/** Shown instead of playing through the speaker; resumes on its own once headphones connect. */
+/** Shown when play is pressed without headphones; resumes once headphones connect or the speaker is allowed. */
 @Composable
 fun HeadphonesScreen(onConnected: () -> Unit) {
     val context = LocalContext.current
     val connectedFlow = remember { AudioOutputs.headphonesConnected(context) }
     val connected by connectedFlow.collectAsState(initial = false)
 
+    var playOnSpeaker by remember { mutableStateOf(context.settings.playOnSpeaker) }
+
     LaunchedEffect(connected) { if (connected) onConnected() }
-    LaunchedEffect(Unit) {
-        if (!AudioOutputs.hasHeadphones(context)) context.startActivity(AudioOutputs.bluetoothSettingsIntent())
-    }
 
     val listState = rememberTransformingLazyColumnState()
     ScreenScaffold(scrollState = listState) { contentPadding ->
@@ -43,6 +46,18 @@ fun HeadphonesScreen(onConnected: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     icon = { Icon(painterResource(R.drawable.ic_bluetooth), contentDescription = null) },
                     label = { Text(stringResource(R.string.open_bluetooth)) },
+                )
+            }
+            item {
+                SwitchButton(
+                    checked = playOnSpeaker,
+                    onCheckedChange = {
+                        context.settings.playOnSpeaker = it
+                        playOnSpeaker = it
+                        if (it) onConnected()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.play_on_speaker)) },
                 )
             }
         }

@@ -19,7 +19,8 @@
     <string name="seek_forward">Forward 10 seconds</string>
     <string name="volume">Volume %1$d</string>
     <string name="connect_headphones">Connect headphones</string>
-    <string name="connect_headphones_body">Wavelet only plays through Bluetooth headphones.</string>
+    <string name="connect_headphones_body">Connect Bluetooth headphones, or play through the watch speaker.</string>
+    <string name="play_on_speaker">Play on watch speaker</string>
     <string name="open_bluetooth">Open Bluetooth</string>
     <string name="playback_error">Can\'t play this song</string>
     <string name="audio_quality">Audio quality</string>
