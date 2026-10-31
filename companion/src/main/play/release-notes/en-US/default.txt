@@ -1,1 +1,1 @@
-Wavelet phone companion: sign in to YouTube Music on your phone and send it to Wavelet on your watch.
+Fixes "No watch with Wavelet found": the phone app can now find your watch. Update Wavelet on your watch too.

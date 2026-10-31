@@ -33,8 +33,8 @@ android {
         applicationId = "io.github.hamzacoder53.wavelet"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1001
-        versionName = "0.4.2"
+        versionCode = 1002
+        versionName = "0.6.0"
     }
 
     buildFeatures {

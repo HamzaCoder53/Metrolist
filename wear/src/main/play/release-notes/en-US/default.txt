@@ -1,1 +1,1 @@
-Play and pause from your watch face with the new Wavelet complication. Choose to play through the watch speaker when no headphones are connected. "Sign in with a code" is removed: use Sign in on phone instead.
+Fixes Sign in on phone (update the phone app too). New: song options with like, up next, shuffle, repeat and start radio; artist pages; recent searches; downloaded playlists stay in sync; listening history to YouTube.
