@@ -119,8 +119,8 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 
 Every release on https://github.com/HamzaCoder53/Metrolist/releases has two APKs:
 
-- `Wavelet-watch-<version>.apk`: install it on the watch over Wi-Fi ADB (see below).
-- `Wavelet-phone-<version>.apk`: install it on the phone you've paired with the watch. It's only
+- `Wavelet-watch.apk`: install it on the watch over Wi-Fi ADB (see below).
+- `Wavelet-phone.apk`: install it on the phone you've paired with the watch. It's only
   needed for **Sign in on phone**.
 
 GitHub and Google Play builds are the same app with the same features.

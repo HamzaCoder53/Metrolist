@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wavelet: free YouTube Music player for Wear OS watches</title>
+<meta name="description" content="Wavelet is a free, open-source YouTube Music player for Wear OS smartwatches. Stream and download music on your watch without your phone, with Bluetooth headphones or the watch speaker, a Tile and a play/pause watch-face complication.">
+<meta name="keywords" content="Wear OS, YouTube Music, smartwatch music player, Wear OS music app, offline music watch, Metrolist, open source">
+<link rel="canonical" href="https://hamzacoder53.github.io/Metrolist/">
+<link rel="icon" href="images/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1F6F78">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Wavelet: YouTube Music on your Wear OS watch">
+<meta property="og:description" content="Stream and download YouTube Music on your watch, no phone needed. Free and open source.">
+<meta property="og:url" content="https://hamzacoder53.github.io/Metrolist/">
+<meta property="og:image" content="https://hamzacoder53.github.io/Metrolist/images/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wavelet",
+  "operatingSystem": "Wear OS 3 or newer",
+  "applicationCategory": "MultimediaApplication",
+  "description": "Free, open-source YouTube Music player for Wear OS smartwatches, built on Metrolist.",
+  "url": "https://hamzacoder53.github.io/Metrolist/",
+  "downloadUrl": "https://github.com/HamzaCoder53/Metrolist/releases/latest",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "image": "https://hamzacoder53.github.io/Metrolist/images/hero.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+}
+</script>
+<style>
+:root {
+  --bg: #f6f8f8; --surface: #ffffff; --text: #12191b; --muted: #4e5b5e;
+  --accent: #1F6F78; --accent-strong: #165259; --on-accent: #ffffff; --border: #dde4e5;
+  --hero-from: #10343a; --hero-to: #090e12;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1114; --surface: #121b1f; --text: #e7eeef; --muted: #a2b1b4;
+    --accent: #5fc3cd; --accent-strong: #8ad6de; --on-accent: #062a2e; --border: #22323a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1114; --surface: #121b1f; --text: #e7eeef; --muted: #a2b1b4;
+  --accent: #5fc3cd; --accent-strong: #8ad6de; --on-accent: #062a2e; --border: #22323a;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+header.hero {
+  background: linear-gradient(180deg, var(--hero-from), var(--hero-to)); color: #fff;
+  padding: 56px 0 32px; text-align: center;
+}
+.brand { display: inline-flex; align-items: center; gap: 12px; }
+.brand img { width: 56px; height: 56px; }
+.brand h1 { font-size: 44px; margin: 0; letter-spacing: -0.5px; }
+.tagline { font-size: 21px; color: #cfe3e5; max-width: 640px; margin: 12px auto 28px; }
+.buttons { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.btn {
+  display: inline-block; padding: 13px 24px; border-radius: 999px; font-weight: 600;
+  text-decoration: none; border: 2px solid transparent;
+}
+.btn.primary { background: #5fc3cd; color: #062a2e; }
+.btn.primary:hover { background: #8ad6de; }
+.btn.ghost { border-color: #5fc3cd; color: #e7f6f7; }
+.small { font-size: 14px; color: #a9c4c7; margin-top: 14px; }
+.hero-img { width: 100%; max-width: 1000px; height: auto; margin-top: 28px; border-radius: 16px; }
+section { padding: 48px 0 8px; }
+h2 { font-size: 28px; margin: 0 0 20px; letter-spacing: -0.3px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+  padding: 20px; text-align: center;
+}
+.card img { width: 70%; max-width: 200px; height: auto; }
+.card h3 { margin: 12px 0 6px; font-size: 18px; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+ol li, ul li { margin-bottom: 8px; }
+code { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 15px; }
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; }
+summary { cursor: pointer; font-weight: 600; }
+footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; text-align: center; }
+@media (max-width: 560px) {
+  .brand h1 { font-size: 34px; }
+  .tagline { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="brand"><img src="images/icon.svg" alt=""><h1>Wavelet</h1></div>
+    <p class="tagline">YouTube Music on your Wear OS watch. Stream or download songs and leave your phone at home.</p>
+    <div class="buttons">
+      <a class="btn primary" href="https://github.com/HamzaCoder53/Metrolist/releases/latest/download/Wavelet-watch.apk">Download the watch app (APK)</a>
+      <a class="btn ghost" href="https://github.com/HamzaCoder53/Metrolist/tree/wear">Source code on GitHub</a>
+    </div>
+    <p class="small">Free and open source (GPL-3.0). Wear OS 3 or newer. Built on Metrolist.</p>
+    <img class="hero-img" src="images/hero.png" width="1600" height="640"
+         alt="Wavelet on four Wear OS watches: Home, Now Playing, a watch face with the Wavelet complication, and the Wavelet Tile">
+  </div>
+</header>
+
+<main class="wrap">
+  <section>
+    <h2>What it does</h2>
+    <div class="grid">
+      <div class="card"><img src="images/now-playing.png" alt="Now Playing screen with artwork and controls" loading="lazy"><h3>Plays on its own</h3><p>Streams YouTube Music over Wi-Fi or LTE. Turn the crown to change the volume.</p></div>
+      <div class="card"><img src="images/search.png" alt="Search by voice or keyboard" loading="lazy"><h3>Search anything</h3><p>Find songs, albums and playlists by voice or keyboard.</p></div>
+      <div class="card"><img src="images/quick-picks.png" alt="Quick picks recommendations on Home" loading="lazy"><h3>Music picked for you</h3><p>Quick picks, mixes and your playlists, synced from your YouTube Music account.</p></div>
+      <div class="card"><img src="images/complication.png" alt="Watch face with the Wavelet play/pause complication" loading="lazy"><h3>Play from the watch face</h3><p>Add the Wavelet complication to your watch face to play and pause with one tap.</p></div>
+      <div class="card"><img src="images/tile.png" alt="Wavelet Tile with play/pause and recent songs" loading="lazy"><h3>A Tile</h3><p>Swipe to see what's playing and jump back into recent songs.</p></div>
+      <div class="card"><img src="images/speaker-prompt.png" alt="Prompt to connect headphones or play on the watch speaker" loading="lazy"><h3>Headphones or speaker</h3><p>Plays through Bluetooth headphones, or through the watch speaker if you turn that on.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>More features</h2>
+    <ul>
+      <li><strong>Offline:</strong> download songs, or let Wavelet keep recently played songs cached, and listen without a connection.</li>
+      <li><strong>Your account:</strong> sign in with the Wavelet phone app (or on the watch, if it has a browser) for your liked songs, playlists and uploads.</li>
+      <li><strong>Autoplay</strong> of similar songs, <strong>volume normalization</strong>, <strong>skip silence</strong>, a <strong>sleep timer</strong> and synced <strong>lyrics</strong>.</li>
+      <li>Low data use by default, to save battery.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Install</h2>
+    <ol>
+      <li>Download <a href="https://github.com/HamzaCoder53/Metrolist/releases/latest/download/Wavelet-watch.apk"><code>Wavelet-watch.apk</code></a>.</li>
+      <li>On the watch, open Settings → System → About and tap <em>Build number</em> seven times. Then in Developer options turn on <strong>ADB debugging</strong> and <strong>Wireless debugging</strong>.</li>
+      <li>Install it from a computer on the same Wi-Fi:
+        <br><code>adb pair &lt;watch-ip&gt;:&lt;pairing-port&gt;</code>
+        <br><code>adb connect &lt;watch-ip&gt;:&lt;port&gt;</code>
+        <br><code>adb install Wavelet-watch.apk</code>
+        <br>Or use a phone app that installs APKs on a watch.</li>
+      <li>Optional: install <a href="https://github.com/HamzaCoder53/Metrolist/releases/latest/download/Wavelet-phone.apk"><code>Wavelet-phone.apk</code></a> on your phone to sign in to your account from there.</li>
+    </ol>
+    <p>All releases and checksums are on the <a href="https://github.com/HamzaCoder53/Metrolist/releases">releases page</a>.</p>
+  </section>
+
+  <section>
+    <h2>Questions</h2>
+    <details><summary>Is it free?</summary><p>Yes. Wavelet is free, has no ads, and its source code is public under the GPL-3.0 license.</p></details>
+    <details><summary>Do I need my phone?</summary><p>No. Wavelet plays on the watch over Wi-Fi or LTE. The phone app is only an easier way to sign in.</p></details>
+    <details><summary>Do I need to sign in?</summary><p>No. Search and playback work without an account. Signing in adds your liked songs, playlists and personal recommendations.</p></details>
+    <details><summary>Which watches work?</summary><p>Wear OS 3 or newer, such as Pixel Watch, Galaxy Watch 4 and later, and TicWatch.</p></details>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Wavelet is built on <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a> by the MetrolistGroup contributors.</p>
+  <p>Wavelet is not affiliated with, endorsed by or sponsored by YouTube or Google.</p>
+</footer>
+</body>
+</html>
