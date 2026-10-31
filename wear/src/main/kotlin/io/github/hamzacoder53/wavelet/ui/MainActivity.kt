@@ -169,6 +169,14 @@ fun WaveletApp(
                     SearchScreen(
                         onPlay = playSongs,
                         onOpenCollection = { kind, id -> navController.navigate(Routes.collection(kind, id)) },
+                        onOpenArtist = { id -> navController.navigate(Routes.artist(id)) },
+                    )
+                }
+                composable(Routes.ARTIST) {
+                    ArtistScreen(
+                        onPlay = playSongs,
+                        onOpenCollection = { kind, id -> navController.navigate(Routes.collection(kind, id)) },
+                        onOpenArtist = { id -> navController.navigate(Routes.artist(id)) },
                     )
                 }
                 composable(Routes.COLLECTION) { CollectionScreen(onPlay = playSongs) }

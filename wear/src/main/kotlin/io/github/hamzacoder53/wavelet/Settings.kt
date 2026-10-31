@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import com.metrolist.music.constants.AudioQuality
 import io.github.hamzacoder53.wavelet.playback.ListeningCache
+import org.json.JSONArray
 
 /** Small synchronous settings store; values are read on the playback thread, so no Flow/DataStore here. */
 class Settings(context: Context) {
@@ -93,6 +94,32 @@ class Settings(context: Context) {
         get() = prefs.getString(KEY_VISITOR_DATA, null)
         set(value) = prefs.edit { putString(KEY_VISITOR_DATA, value) }
 
+    var recentSearches: List<String>
+        get() {
+            val raw = prefs.getString(KEY_RECENT_SEARCHES, null) ?: return emptyList()
+            return runCatching {
+                val array = JSONArray(raw)
+                (0 until array.length()).map { array.getString(it) }
+            }.getOrDefault(emptyList())
+        }
+        set(value) {
+            val array = JSONArray()
+            value.forEach { array.put(it) }
+            prefs.edit { putString(KEY_RECENT_SEARCHES, array.toString()) }
+        }
+
+    fun addRecentSearch(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return
+        val list = recentSearches.filterNot { it.equals(trimmed, ignoreCase = true) }.toMutableList()
+        list.add(0, trimmed)
+        recentSearches = list.take(MAX_RECENT_SEARCHES)
+    }
+
+    fun clearRecentSearches() {
+        prefs.edit { remove(KEY_RECENT_SEARCHES) }
+    }
+
     companion object {
         const val KEY_AUDIO_QUALITY = "audio_quality"
         const val KEY_VISITOR_DATA = "visitor_data"
@@ -112,6 +139,8 @@ class Settings(context: Context) {
         const val KEY_SKIP_SILENCE = "skip_silence"
         const val KEY_SHOW_UPLOADS = "show_uploads"
         const val KEY_PLAY_ON_SPEAKER = "play_on_speaker"
+        const val KEY_RECENT_SEARCHES = "recent_searches"
+        const val MAX_RECENT_SEARCHES = 10
     }
 }
 

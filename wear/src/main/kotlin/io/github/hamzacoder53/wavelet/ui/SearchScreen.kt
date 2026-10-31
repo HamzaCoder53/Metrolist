@@ -41,6 +41,7 @@ import androidx.wear.input.RemoteInputIntentHelper
 import androidx.wear.input.wearableExtender
 import coil3.compose.AsyncImage
 import com.metrolist.innertube.models.AlbumItem
+import com.metrolist.innertube.models.ArtistItem
 import com.metrolist.innertube.models.PlaylistItem
 import com.metrolist.innertube.models.SongItem
 import io.github.hamzacoder53.wavelet.R
@@ -54,12 +55,14 @@ private const val QUERY_KEY = "query"
 fun SearchScreen(
     onPlay: (List<SongItem>, Int) -> Unit,
     onOpenCollection: (kind: String, id: String) -> Unit,
+    onOpenArtist: (browseId: String) -> Unit = {},
     viewModel: SearchViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val downloads = (context.applicationContext as WaveletApplication).downloads
     val state by viewModel.state.collectAsState()
     val type by viewModel.type.collectAsState()
+    val recentSearches by viewModel.recentSearches.collectAsState()
     val keyboardLabel = stringResource(R.string.search)
     val downloadingText = stringResource(R.string.download)
 
@@ -109,7 +112,7 @@ fun SearchScreen(
                                         setEmojisAllowed(false)
                                         setInputActionType(EditorInfo.IME_ACTION_SEARCH)
                                     }.build()
-                            val intent = RemoteInputIntentHelper.createActionRemoteInputIntent()
+                             val intent = RemoteInputIntentHelper.createActionRemoteInputIntent()
                             RemoteInputIntentHelper.putRemoteInputsExtra(intent, listOf(remoteInput))
                             keyboardLauncher.launch(intent)
                         },
@@ -123,21 +126,22 @@ fun SearchScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
                 ) {
-                    // Icon-only so all three fit on small round screens; the selected one is filled.
+                    // Icon-only so all fit on small round screens; the selected one is filled.
                     SearchType.entries.forEach { option ->
                         val label = stringResource(option.labelRes())
                         val icon =
                             when (option) {
                                 SearchType.SONGS -> R.drawable.ic_music_note
                                 SearchType.ALBUMS -> R.drawable.ic_album
+                                SearchType.ARTISTS -> R.drawable.ic_account
                                 SearchType.PLAYLISTS -> R.drawable.ic_playlist
                             }
                         if (option == type) {
-                            FilledIconButton(onClick = {}, modifier = Modifier.size(40.dp)) {
+                            FilledIconButton(onClick = {}, modifier = Modifier.size(38.dp)) {
                                 Icon(painterResource(icon), label, Modifier.size(20.dp))
                             }
                         } else {
-                            FilledTonalIconButton(onClick = { viewModel.setType(option) }, modifier = Modifier.size(40.dp)) {
+                            FilledTonalIconButton(onClick = { viewModel.setType(option) }, modifier = Modifier.size(38.dp)) {
                                 Icon(painterResource(icon), label, Modifier.size(20.dp))
                             }
                         }
@@ -146,7 +150,27 @@ fun SearchScreen(
             }
 
             when (val current = state) {
-                SearchState.Idle -> Unit
+                SearchState.Idle -> {
+                    if (recentSearches.isNotEmpty()) {
+                        item { ListHeader { Text(stringResource(R.string.recent_searches)) } }
+                        items(recentSearches, key = { "recent_$it" }) { query ->
+                            FilledTonalButton(
+                                onClick = { viewModel.search(query) },
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
+                                label = { Text(query, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            )
+                        }
+                        item {
+                            FilledTonalButton(
+                                onClick = viewModel::clearRecentSearches,
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = { Icon(painterResource(R.drawable.ic_delete), contentDescription = null) },
+                                label = { Text(stringResource(R.string.clear_recent_searches)) },
+                            )
+                        }
+                    }
+                }
                 is SearchState.Loading -> item { CenteredText(stringResource(R.string.searching)) }
                 is SearchState.Failed -> item { CenteredText(stringResource(R.string.search_failed)) }
                 is SearchState.Results -> {
@@ -190,7 +214,25 @@ fun SearchScreen(
                                     thumbnail = item.thumbnail,
                                     onClick = { onOpenCollection(CollectionViewModel.KIND_PLAYLIST, item.id) },
                                 )
+                            is ArtistItem ->
+                                ItemButton(
+                                    title = item.title,
+                                    subtitle = stringResource(R.string.artist),
+                                    thumbnail = item.thumbnail,
+                                    onClick = { onOpenArtist(item.id) },
+                                )
                             else -> Unit
+                        }
+                    }
+                    if (current.suggestions.isNotEmpty()) {
+                        item { ListHeader { Text(stringResource(R.string.related_searches)) } }
+                        items(current.suggestions, key = { "suggestion_$it" }) { suggestion ->
+                            FilledTonalButton(
+                                onClick = { viewModel.search(suggestion) },
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
+                                label = { Text(suggestion, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            )
                         }
                     }
                 }
@@ -203,6 +245,7 @@ private fun SearchType.labelRes(): Int =
     when (this) {
         SearchType.SONGS -> R.string.songs
         SearchType.ALBUMS -> R.string.albums
+        SearchType.ARTISTS -> R.string.artists
         SearchType.PLAYLISTS -> R.string.playlists
     }
 
