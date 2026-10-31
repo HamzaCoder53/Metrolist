@@ -32,6 +32,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @OptIn(UnstableApi::class)
@@ -42,6 +43,7 @@ class PlaybackService : MediaSessionService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val mainHandler = Handler(Looper.getMainLooper())
     private var autoplayJob: Job? = null
+    private var historyReporter: YouTubeHistoryReporter? = null
 
     private val app get() = application as WaveletApplication
 
@@ -52,6 +54,7 @@ class PlaybackService : MediaSessionService() {
                 Settings.KEY_SKIP_SILENCE -> player.skipSilenceEnabled = app.settings.skipSilence
                 Settings.KEY_NORMALIZE -> applyNormalization(player)
                 Settings.KEY_AUTOPLAY -> maybeExtendQueue(player)
+                Settings.KEY_SAVE_LISTENING_HISTORY -> historyReporter?.refresh()
             }
         }
 
@@ -80,6 +83,42 @@ class PlaybackService : MediaSessionService() {
                 .build()
         player.skipSilenceEnabled = app.settings.skipSilence
         player.addListener(playerListener(player))
+
+        val reporter =
+            YouTubeHistoryReporter(
+                player = player,
+                scope = scope,
+                thresholdMs = { 30_000L },
+                isEnabled = {
+                    app.settings.saveListeningHistory &&
+                        app.account.state.value.signedIn &&
+                        !YouTube.cookie.isNullOrBlank()
+                },
+                createReport = { videoId ->
+                    val account = Triple(YouTube.cookie, YouTube.dataSyncId, YouTube.authUser)
+                    val nonce = com.metrolist.innertubex.extraction.generateClientPlaybackNonce()
+                    suspend {
+                        withContext(Dispatchers.IO) {
+                            YouTube.registerPlayback(videoId, nonce) {
+                                app.settings.saveListeningHistory &&
+                                    app.account.state.value.signedIn &&
+                                    account == Triple(YouTube.cookie, YouTube.dataSyncId, YouTube.authUser)
+                            }.onFailure { Timber.w(it, "Failed to register playback for %s", videoId) }
+                                .getOrDefault(false)
+                        }
+                    }
+                },
+            )
+        historyReporter = reporter
+        player.addAnalyticsListener(reporter.statsListener)
+        player.addAnalyticsListener(reporter.listener)
+
+        scope.launch {
+            app.account.state.collect {
+                reporter.refresh()
+            }
+        }
+
         app.settings.registerListener(settingsListener)
 
         // Loudness arrives when a stream resolves, i.e. just after the song starts loading.
@@ -112,6 +151,8 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        historyReporter?.close()
+        historyReporter = null
         NowPlayingStore.write(this, null, false)
         app.settings.unregisterListener(settingsListener)
         app.loudness.onChanged = null

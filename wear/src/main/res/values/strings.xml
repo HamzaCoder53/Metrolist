@@ -141,4 +141,7 @@
     <string name="recent_searches">Recent searches</string>
     <string name="clear_recent_searches">Clear recent searches</string>
     <string name="related_searches">Related searches</string>
+    <string name="save_listening_history">Save listening history to YouTube</string>
+    <string name="update_available">Update available (%1$s)</string>
+    <string name="update_release_url">Release page URL</string>
 </resources>

@@ -1,12 +1,17 @@
 package io.github.hamzacoder53.wavelet.ui
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -16,20 +21,26 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
-import com.metrolist.innertube.models.AlbumItem
-import com.metrolist.innertube.models.PlaylistItem
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.material3.AlertDialog
+import androidx.wear.compose.material3.AlertDialogDefaults
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.FilledTonalButton
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import androidx.wear.remote.interactions.RemoteActivityHelper
+import com.metrolist.innertube.models.AlbumItem
+import com.metrolist.innertube.models.PlaylistItem
 import com.metrolist.innertube.models.SongItem
 import io.github.hamzacoder53.wavelet.R
 import io.github.hamzacoder53.wavelet.WaveletApplication
 import io.github.hamzacoder53.wavelet.playback.SleepTimer
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.guava.await
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun HomeScreen(
@@ -47,8 +58,13 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
 ) {
     val sections by viewModel.sections.collectAsState()
-    val sleepTimer = (LocalContext.current.applicationContext as WaveletApplication).sleepTimer
+    val context = LocalContext.current
+    val app = context.applicationContext as WaveletApplication
+    val sleepTimer = app.sleepTimer
     val timerState by sleepTimer.state.collectAsState()
+    val updateInfo by app.updateChecker.updateAvailable.collectAsState()
+    val scope = rememberCoroutineScope()
+    var failedUrl by remember { mutableStateOf<String?>(null) }
     val now = remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(timerState) {
         while (timerState is SleepTimer.State.At) {
@@ -61,6 +77,32 @@ fun HomeScreen(
     ScreenScaffold(scrollState = listState) { contentPadding ->
         TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
             item { ListHeader { Text(stringResource(R.string.app_name)) } }
+            updateInfo?.let { update ->
+                item {
+                    FilledTonalButton(
+                        onClick = {
+                            scope.launch {
+                                try {
+                                    val helper = RemoteActivityHelper(context)
+                                    val intent =
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(update.releaseUrl))
+                                            .addCategory(Intent.CATEGORY_BROWSABLE)
+                                    helper.startRemoteActivity(intent).await()
+                                } catch (e: Exception) {
+                                    Timber.w(e, "Couldn't open update URL on paired phone")
+                                    failedUrl = update.releaseUrl
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        icon = { Icon(painterResource(R.drawable.ic_download), contentDescription = null) },
+                        label = { Text(stringResource(R.string.update_available, update.version)) },
+                        secondaryLabel = failedUrl?.let { url ->
+                            { Text(url, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                        },
+                    )
+                }
+            }
             item {
                 Button(
                     onClick = onSearch,
@@ -166,6 +208,17 @@ fun HomeScreen(
                     label = { Text(stringResource(R.string.about)) },
                 )
             }
+        }
+        if (failedUrl != null) {
+            AlertDialog(
+                visible = true,
+                onDismissRequest = { failedUrl = null },
+                title = { Text(stringResource(R.string.update_release_url)) },
+                text = { Text(failedUrl.orEmpty()) },
+                confirmButton = {
+                    AlertDialogDefaults.ConfirmButton(onClick = { failedUrl = null })
+                },
+            )
         }
     }
 }

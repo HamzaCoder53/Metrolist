@@ -47,6 +47,9 @@ class WaveletApplication : Application(), SingletonImageLoader.Factory {
     lateinit var loudness: Loudness
         private set
 
+    lateinit var updateChecker: UpdateChecker
+        private set
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
@@ -56,6 +59,8 @@ class WaveletApplication : Application(), SingletonImageLoader.Factory {
         listeningCache = ListeningCache(this, settings, downloads.databaseProvider)
         account = Account(this, settings)
         accountLibrary = AccountLibrary(this, settings, account)
+        updateChecker = UpdateChecker(this, settings)
+        updateChecker.checkOnAppStart(appScope)
         InnerTubeXPlayer.initialize(this)
 
         YouTube.visitorData = settings.visitorData

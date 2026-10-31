@@ -64,6 +64,22 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(KEY_SKIP_SILENCE, false)
         set(value) = prefs.edit { putBoolean(KEY_SKIP_SILENCE, value) }
 
+    var saveListeningHistory: Boolean
+        get() = prefs.getBoolean(KEY_SAVE_LISTENING_HISTORY, true)
+        set(value) = prefs.edit { putBoolean(KEY_SAVE_LISTENING_HISTORY, value) }
+
+    var lastUpdateCheckTime: Long
+        get() = prefs.getLong(KEY_LAST_UPDATE_CHECK_TIME, 0L)
+        set(value) = prefs.edit { putLong(KEY_LAST_UPDATE_CHECK_TIME, value) }
+
+    var latestAvailableVersion: String?
+        get() = prefs.getString(KEY_LATEST_AVAILABLE_VERSION, null)
+        set(value) = prefs.edit { putString(KEY_LATEST_AVAILABLE_VERSION, value) }
+
+    var latestReleaseUrl: String?
+        get() = prefs.getString(KEY_LATEST_RELEASE_URL, null)
+        set(value) = prefs.edit { putString(KEY_LATEST_RELEASE_URL, value) }
+
     fun registerListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener) =
         prefs.registerOnSharedPreferenceChangeListener(listener)
 
@@ -137,6 +153,10 @@ class Settings(context: Context) {
         const val KEY_AUTOPLAY = "autoplay"
         const val KEY_NORMALIZE = "normalize_volume"
         const val KEY_SKIP_SILENCE = "skip_silence"
+        const val KEY_SAVE_LISTENING_HISTORY = "save_listening_history"
+        const val KEY_LAST_UPDATE_CHECK_TIME = "last_update_check_time"
+        const val KEY_LATEST_AVAILABLE_VERSION = "latest_available_version"
+        const val KEY_LATEST_RELEASE_URL = "latest_release_url"
         const val KEY_SHOW_UPLOADS = "show_uploads"
         const val KEY_PLAY_ON_SPEAKER = "play_on_speaker"
         const val KEY_RECENT_SEARCHES = "recent_searches"

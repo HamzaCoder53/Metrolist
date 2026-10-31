@@ -43,6 +43,7 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
     var autoplay by remember { mutableStateOf(settings.autoplay) }
     var normalize by remember { mutableStateOf(settings.normalizeVolume) }
     var skipSilence by remember { mutableStateOf(settings.skipSilence) }
+    var saveListeningHistory by remember { mutableStateOf(settings.saveListeningHistory) }
     var playOnSpeaker by remember { mutableStateOf(settings.playOnSpeaker) }
     // Re-read size and limit whenever the cached song list changes (after clearing, resizing or playing).
     val cachedSongs by listeningCache.songs.collectAsState()
@@ -109,6 +110,17 @@ fun SettingsScreen(onOpenCacheSize: () -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.skip_silence)) },
+                )
+            }
+            item {
+                SwitchButton(
+                    checked = saveListeningHistory,
+                    onCheckedChange = {
+                        settings.saveListeningHistory = it
+                        saveListeningHistory = it
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.save_listening_history)) },
                 )
             }
             item {
