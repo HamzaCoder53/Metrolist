@@ -12,6 +12,7 @@ import androidx.media3.session.SessionToken
 import com.metrolist.innertube.models.SongItem
 import io.github.hamzacoder53.wavelet.playback.AudioOutputs
 import io.github.hamzacoder53.wavelet.playback.PlaybackService
+import io.github.hamzacoder53.wavelet.playback.fetchRadioItems
 import io.github.hamzacoder53.wavelet.playback.toMediaItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 data class NowPlayingState(
     val mediaItem: MediaItem? = null,
@@ -32,6 +34,17 @@ data class NowPlayingState(
     val durationMs: Long = 0,
     val needsHeadphones: Boolean = false,
     val error: String? = null,
+    val shuffleModeEnabled: Boolean = false,
+    val repeatMode: Int = Player.REPEAT_MODE_OFF,
+)
+
+data class QueueEntry(
+    val timelineIndex: Int,
+    val mediaId: String,
+    val title: String,
+    val artist: String?,
+    val thumbnail: String?,
+    val isCurrent: Boolean,
 )
 
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
@@ -40,6 +53,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _state = MutableStateFlow(NowPlayingState())
     val state: StateFlow<NowPlayingState> = _state.asStateFlow()
+
+    private val _queue = MutableStateFlow<List<QueueEntry>>(emptyList())
+    val queue: StateFlow<List<QueueEntry>> = _queue.asStateFlow()
 
     private val _volume = MutableStateFlow(currentVolume())
     val volume: StateFlow<Pair<Int, Int>> = _volume.asStateFlow()
@@ -138,6 +154,76 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         (getApplication<Application>() as io.github.hamzacoder53.wavelet.WaveletApplication).downloads.download(listOf(song))
     }
 
+    fun setShuffle(enabled: Boolean) {
+        val player = controller ?: return
+        player.shuffleModeEnabled = enabled
+        _state.update { it.copy(shuffleModeEnabled = enabled) }
+    }
+
+    fun toggleShuffle() {
+        val player = controller ?: return
+        setShuffle(!player.shuffleModeEnabled)
+    }
+
+    fun cycleRepeatMode() {
+        val player = controller ?: return
+        val nextMode =
+            when (player.repeatMode) {
+                Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+                Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+                Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
+                else -> Player.REPEAT_MODE_OFF
+            }
+        player.repeatMode = nextMode
+        _state.update { it.copy(repeatMode = nextMode) }
+    }
+
+    fun playQueueIndex(timelineIndex: Int) {
+        val player = controller ?: return
+        if (timelineIndex in 0 until player.mediaItemCount) {
+            player.seekToDefaultPosition(timelineIndex)
+            player.play()
+        }
+    }
+
+    fun removeFromQueue(timelineIndex: Int) {
+        val player = controller ?: return
+        if (timelineIndex in 0 until player.mediaItemCount) {
+            player.removeMediaItem(timelineIndex)
+            refresh(player)
+        }
+    }
+
+    /**
+     * Keeps the current song playing and replaces everything after it with
+     * YouTube Music's radio for this song.
+     */
+    fun startRadio(onSuccess: () -> Unit = {}) {
+        val player = controller ?: return
+        val currentIndex = player.currentMediaItemIndex
+        if (currentIndex < 0 || currentIndex >= player.mediaItemCount) return
+        val currentSong = player.currentMediaItem ?: return
+        val seedId = currentSong.mediaId
+
+        viewModelScope.launch {
+            fetchRadioItems(seedId)
+                .onSuccess { items ->
+                    val additions = items.filter { it.mediaId != seedId }
+                    if (additions.isNotEmpty()) {
+                        val count = player.mediaItemCount
+                        if (count > currentIndex + 1) {
+                            player.removeMediaItems(currentIndex + 1, count)
+                        }
+                        player.addMediaItems(additions)
+                        refresh(player)
+                        onSuccess()
+                    }
+                }.onFailure { error ->
+                    Timber.w(error, "Start radio failed for %s", seedId)
+                }
+        }
+    }
+
     fun skipNext() = controller?.seekToNextMediaItem()
 
     fun skipPrevious() = controller?.seekToPrevious()
@@ -161,6 +247,27 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
 
     private fun refresh(player: Player) {
+        val count = player.mediaItemCount
+        val currentIdx = player.currentMediaItemIndex
+        val queueItems =
+            if (count > 0 && currentIdx in 0 until count) {
+                (currentIdx until count).map { i ->
+                    val item = player.getMediaItemAt(i)
+                    val md = item.mediaMetadata
+                    QueueEntry(
+                        timelineIndex = i,
+                        mediaId = item.mediaId,
+                        title = md.title?.toString() ?: item.mediaId,
+                        artist = md.artist?.toString(),
+                        thumbnail = md.artworkUri?.toString(),
+                        isCurrent = i == currentIdx,
+                    )
+                }
+            } else {
+                emptyList()
+            }
+        _queue.value = queueItems
+
         _state.update {
             it.copy(
                 mediaItem = player.currentMediaItem,
@@ -181,6 +288,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                                 Player.PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT
                         ),
                 error = player.playerError?.message,
+                shuffleModeEnabled = player.shuffleModeEnabled,
+                repeatMode = player.repeatMode,
             )
         }
     }

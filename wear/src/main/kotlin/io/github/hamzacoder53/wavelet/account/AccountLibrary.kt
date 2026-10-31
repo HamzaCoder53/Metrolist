@@ -80,6 +80,30 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
         file.delete()
     }
 
+    /**
+     * Updates the local snapshot when a song is liked/unliked and persists it to disk,
+     * without needing a full network sync.
+     */
+    suspend fun updateLiked(song: SongItem, liked: Boolean) =
+        withContext(Dispatchers.IO) {
+            mutex.withLock {
+                val current = _snapshot.value
+                val updatedLiked =
+                    if (liked) {
+                        if (current.likedSongs.any { it.id == song.id }) {
+                            current.likedSongs
+                        } else {
+                            listOf(song) + current.likedSongs
+                        }
+                    } else {
+                        current.likedSongs.filterNot { it.id == song.id }
+                    }
+                val fresh = current.copy(likedSongs = updatedLiked)
+                _snapshot.value = fresh
+                runCatching { save(fresh) }.onFailure { Timber.w(it, "Failed to persist updated liked songs") }
+            }
+        }
+
     /** Uploaded songs need a playback hint (InnerTubeX ContentHints.isUploaded) to resolve. */
     fun isUploaded(mediaId: String): Boolean = _snapshot.value.uploads.any { it.id == mediaId }
 

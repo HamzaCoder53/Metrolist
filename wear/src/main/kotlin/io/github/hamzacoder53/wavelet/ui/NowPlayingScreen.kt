@@ -52,10 +52,12 @@ import kotlin.math.abs
 private const val ROTARY_STEP_PX = 48f
 
 @Composable
-fun NowPlayingScreen(player: PlayerViewModel) {
+fun NowPlayingScreen(
+    player: PlayerViewModel,
+    onSongOptions: () -> Unit = {},
+) {
     val state by player.state.collectAsState()
     val volume by player.volume.collectAsState()
-    val downloaded by (LocalContext.current.applicationContext as WaveletApplication).downloads.songs.collectAsState()
     val showLyrics by player.showLyrics.collectAsState()
     val lyricsState by player.lyrics.collectAsState()
     val focusRequester = remember { FocusRequester() }
@@ -181,18 +183,14 @@ fun NowPlayingScreen(player: PlayerViewModel) {
                     ) {
                         Icon(painterResource(R.drawable.ic_replay), stringResource(R.string.seek_back), Modifier.size(18.dp))
                     }
-                    val currentId = state.mediaItem?.mediaId
-                    val downloadState = downloaded.firstOrNull { it.id == currentId }
                     IconButton(
-                        onClick = player::downloadCurrent,
-                        enabled = currentId != null && downloadState == null,
+                        onClick = onSongOptions,
+                        enabled = state.mediaItem != null,
                         modifier = Modifier.size(32.dp),
                     ) {
                         Icon(
-                            painterResource(
-                                if (downloadState?.isComplete == true) R.drawable.ic_download_done else R.drawable.ic_download,
-                            ),
-                            stringResource(if (downloadState?.isComplete == true) R.string.downloaded else R.string.download),
+                            painterResource(R.drawable.ic_more),
+                            stringResource(R.string.more),
                             Modifier.size(18.dp),
                         )
                     }

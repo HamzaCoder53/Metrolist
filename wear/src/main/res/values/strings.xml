@@ -118,4 +118,21 @@
     <string name="autoplay">Autoplay similar songs</string>
     <string name="normalize_volume">Normalize volume</string>
     <string name="skip_silence">Skip silence</string>
+    <string name="more">More</string>
+    <string name="song_options">Song options</string>
+    <string name="like">Like</string>
+    <string name="unlike">Unlike</string>
+    <string name="like_failed">Couldn\'t update like</string>
+    <string name="up_next">Up next</string>
+    <string name="queue">Queue</string>
+    <string name="queue_empty">Queue is empty</string>
+    <string name="remove_from_queue">Remove from queue?</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="repeat">Repeat</string>
+    <string name="repeat_off">Off</string>
+    <string name="repeat_all">All</string>
+    <string name="repeat_one">One</string>
+    <string name="start_radio">Start radio</string>
+    <string name="radio_started">Radio started</string>
+    <string name="go_to_artist">Go to artist</string>
 </resources>

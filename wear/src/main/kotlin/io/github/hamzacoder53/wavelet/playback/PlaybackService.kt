@@ -143,14 +143,10 @@ class PlaybackService : MediaSessionService() {
         val seedId = player.currentMediaItem?.mediaId ?: return
         autoplayJob =
             scope.launch {
-                YouTube.next(WatchEndpoint(videoId = seedId))
-                    .onSuccess { result ->
+                fetchRadioItems(seedId)
+                    .onSuccess { items ->
                         val queued = (0 until player.mediaItemCount).map { player.getMediaItemAt(it).mediaId }.toSet()
-                        val additions =
-                            result.items
-                                .filter { it.id !in queued && !it.isVideoSong }
-                                .take(AUTOPLAY_BATCH)
-                                .map { it.toMediaItem() }
+                        val additions = items.filter { it.mediaId !in queued }.take(AUTOPLAY_BATCH)
                         if (additions.isNotEmpty()) {
                             player.addMediaItems(additions)
                             Timber.d("Autoplay added %d songs after %s", additions.size, seedId)

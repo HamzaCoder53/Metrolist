@@ -45,10 +45,15 @@ object Routes {
     const val SLEEP_TIMER = "sleep_timer"
     const val PLAYLISTS = "playlists"
     const val LIBRARY_COLLECTION = "library/{collectionId}"
+    const val SONG_OPTIONS = "song_options"
+    const val QUEUE = "queue"
+    const val ARTIST = "artist/{browseId}"
 
     fun collection(kind: String, id: String) = "collection/$kind/${Uri.encode(id)}"
 
     fun libraryCollection(id: String) = "library/${Uri.encode(id)}"
+
+    fun artist(browseId: String) = "artist/${Uri.encode(browseId)}"
 }
 
 class MainActivity : ComponentActivity() {
@@ -185,7 +190,22 @@ fun WaveletApp(
                         collectionId = entry.arguments?.getString("collectionId"),
                     )
                 }
-                composable(Routes.NOW_PLAYING) { NowPlayingScreen(player) }
+                composable(Routes.NOW_PLAYING) {
+                    NowPlayingScreen(
+                        player = player,
+                        onSongOptions = { navController.navigate(Routes.SONG_OPTIONS) },
+                    )
+                }
+                composable(Routes.SONG_OPTIONS) {
+                    SongOptionsScreen(
+                        player = player,
+                        onQueue = { navController.navigate(Routes.QUEUE) },
+                        onGoToArtist = { browseId -> navController.navigate(Routes.artist(browseId)) },
+                    )
+                }
+                composable(Routes.QUEUE) {
+                    QueueScreen(player = player)
+                }
                 composable(Routes.HEADPHONES) {
                     HeadphonesScreen(
                         onConnected = {
