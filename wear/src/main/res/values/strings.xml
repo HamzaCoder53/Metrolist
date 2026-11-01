@@ -18,6 +18,10 @@
     <string name="seek_back">Back 10 seconds</string>
     <string name="seek_forward">Forward 10 seconds</string>
     <string name="volume">Volume %1$d</string>
+    <string name="seek_position">%1$s / %2$s</string>
+    <string name="seek_with_crown">Seek with the crown</string>
+    <string name="crown_seeks">Turn the crown to seek</string>
+    <string name="release_to_seek">Release to seek</string>
     <string name="connect_headphones">Connect headphones</string>
     <string name="connect_headphones_body">Connect Bluetooth headphones, or play through the watch speaker.</string>
     <string name="play_on_speaker">Play on watch speaker</string>

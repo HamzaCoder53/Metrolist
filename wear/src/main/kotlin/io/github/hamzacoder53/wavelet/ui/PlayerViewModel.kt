@@ -33,6 +33,8 @@ data class NowPlayingState(
     val hasPrevious: Boolean = false,
     val positionMs: Long = 0,
     val durationMs: Long = 0,
+    /** False for streams that can't seek (e.g. experimental SABR uploads). */
+    val isSeekable: Boolean = false,
     val needsHeadphones: Boolean = false,
     val error: String? = null,
     val shuffleModeEnabled: Boolean = false,
@@ -242,7 +244,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun seekBy(deltaMs: Long) {
         val player = controller ?: return
-        player.seekTo((player.currentPosition + deltaMs).coerceIn(0, player.duration.coerceAtLeast(0)))
+        seekTo(player.currentPosition + deltaMs)
+    }
+
+    fun seekTo(positionMs: Long) {
+        val player = controller ?: return
+        player.seekTo(positionMs.coerceIn(0, player.duration.coerceAtLeast(0)))
+        refresh(player)
     }
 
     fun adjustVolume(direction: Int) {
@@ -290,6 +298,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 hasPrevious = player.hasPreviousMediaItem() || player.currentPosition > 3000,
                 positionMs = player.currentPosition,
                 durationMs = player.duration.coerceAtLeast(0),
+                isSeekable = player.isCurrentMediaItemSeekable && player.duration > 0,
                 // Media3 reports this suppression even when idle, so only treat it as a prompt
                 // when the user actually asked to play something.
                 needsHeadphones =
