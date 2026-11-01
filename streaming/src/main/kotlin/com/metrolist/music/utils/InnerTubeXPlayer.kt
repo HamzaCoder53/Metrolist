@@ -23,8 +23,10 @@ import com.metrolist.innertubex.extraction.YtConfigParser
 import com.metrolist.innertubex.extraction.YtConfigParserImpl
 import com.metrolist.innertubex.extraction.generateClientPlaybackNonce
 import com.metrolist.innertubex.extraction.strategy.PoTokenProviderKind
+import com.metrolist.innertubex.sabr.SabrBootstrap
 import com.metrolist.music.constants.AudioQuality
 import com.metrolist.music.utils.potoken.PoTokenGenerator
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -60,6 +62,7 @@ object InnerTubeXPlayer {
         connectivityManager: ConnectivityManager,
         contentHints: ContentHints = ContentHints(),
         allowBoundedRange: Boolean = true,
+        allowSabr: Boolean = false,
     ): Result<PlaybackData> =
         try {
             val hints =
@@ -70,7 +73,7 @@ object InnerTubeXPlayer {
                             playlistId?.contains("MLPT") == true,
                 ).withStreamCapabilities(
                     allowHls = false,
-                    allowSabr = false,
+                    allowSabr = allowSabr,
                     allowBoundedRange = allowBoundedRange,
                 )
             val excludedClients = failedStreamClients(videoId)
@@ -84,7 +87,7 @@ object InnerTubeXPlayer {
                         clientPlaybackNonce = generateClientPlaybackNonce(),
                     ),
                 ) { "InnerTubeX returned no playable stream" }
-            check(stream.sabrBootstrap == null) { "SABR is not supported by this playback engine" }
+            check(allowSabr || stream.sabrBootstrap == null) { "SABR is not supported by this playback engine" }
             Result.success(stream.toPlaybackData())
         } catch (error: CancellationException) {
             throw error
@@ -128,6 +131,9 @@ object InnerTubeXPlayer {
         }
         return failures.clientNames
     }
+
+    /** The authenticated HTTP client extraction uses; SABR media requests must go through it too. */
+    suspend fun sabrHttpClient(): HttpClient = YouTube.extractionTransport().httpClient
 
     private suspend fun bundle(): ExtractionBundle {
         val transport = YouTube.extractionTransport()
@@ -238,6 +244,8 @@ object InnerTubeXPlayer {
         val requireBoundedRange: Boolean,
         val rangeChunkSizeBytes: Long,
         val useRangeChunks: Boolean,
+        /** Set when the stream is SABR (only if the caller allowed it); play it with SabrAudioStream. */
+        val sabrBootstrap: SabrBootstrap? = null,
     )
 
     private data class ExtractionBundle(
@@ -376,6 +384,7 @@ object InnerTubeXPlayer {
                     ?: DEFAULT_STREAM_TTL_SECONDS,
             streamClient = clientName,
             streamHeaders = headers,
+            sabrBootstrap = sabrBootstrap,
             requireBoundedRange = this.requireBoundedRange,
             rangeChunkSizeBytes = this.rangeChunkSizeBytes,
             useRangeChunks = this.useRangeChunks,

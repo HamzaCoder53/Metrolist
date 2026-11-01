@@ -54,20 +54,29 @@ class YouTubeDataSource(context: Context) {
 
     private fun resolvingFactory(): DataSource.Factory {
         val http = OkHttpDataSource.Factory(OkHttpClient.Builder().proxy(YouTube.proxy).build())
-        return ResolvingDataSource.Factory(DefaultDataSource.Factory(appContext, http)) { dataSpec ->
+        return ResolvingDataSource.Factory(SabrDataSource.RoutingFactory(DefaultDataSource.Factory(appContext, http))) { dataSpec ->
             val mediaId = dataSpec.key ?: throw IOException("No media id")
             urlCache[mediaId]?.let { return@Factory dataSpec.withResolvedStream(it) }
 
             val generation = urlCache.generation(mediaId)
+            val uploaded = (appContext as WaveletApplication).accountLibrary.isUploaded(mediaId)
             val playback =
                 runBlocking(Dispatchers.IO) {
                     InnerTubeXPlayer.playerResponseForPlayback(
                         videoId = mediaId,
                         audioQuality = appContext.settings.audioQuality,
                         connectivityManager = connectivityManager,
-                        contentHints = ContentHints(isUploaded = (appContext as WaveletApplication).accountLibrary.isUploaded(mediaId)),
+                        contentHints = ContentHints(isUploaded = uploaded),
+                        // Without a WebView, SABR is the only way YouTube serves uploads (experimental).
+                        allowSabr = uploaded,
                     )
                 }.getOrElse { throw IOException("Could not resolve stream for $mediaId", it) }
+            playback.sabrBootstrap?.let { bootstrap ->
+                Timber.d("Resolved %s via %s (SABR)", mediaId, playback.streamClient)
+                (appContext as WaveletApplication).loudness.record(mediaId, playback.audioConfig?.loudnessDb)
+                SabrDataSource.sessions[mediaId] = bootstrap
+                return@Factory dataSpec.withUri(SabrDataSource.uriFor(mediaId))
+            }
             Timber.d("Resolved %s via %s (itag %d)", mediaId, playback.streamClient, playback.format.itag)
             (appContext as WaveletApplication).loudness.record(mediaId, playback.audioConfig?.loudnessDb)
 
