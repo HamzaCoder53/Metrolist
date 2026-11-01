@@ -79,6 +79,8 @@
     <string name="uploaded_music">Uploaded music</string>
     <string name="show_uploaded_music">Show uploaded music</string>
     <string name="no_uploads">No uploaded songs</string>
+    <string name="all_songs">All songs</string>
+    <string name="hide_songs">Hide songs</string>
     <string name="recommended">Recommended</string>
     <string name="sign_in_on_phone">Sign in on phone</string>
     <string name="sign_in_on_phone_detail">Full account · uses the Wavelet phone app</string>

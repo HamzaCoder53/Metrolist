@@ -153,6 +153,7 @@ fun WaveletApp(
                         onOpenPlaylist = { id ->
                             navController.navigate(Routes.collection(CollectionViewModel.KIND_ACCOUNT_PLAYLIST, id))
                         },
+                        onOpenAlbum = { id -> navController.navigate(Routes.collection(CollectionViewModel.KIND_ALBUM, id)) },
                         onSignIn = { navController.navigate(Routes.ACCOUNT) },
                     )
                 }

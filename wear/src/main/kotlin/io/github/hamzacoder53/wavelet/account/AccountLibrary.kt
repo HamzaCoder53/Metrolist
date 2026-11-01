@@ -2,6 +2,7 @@ package io.github.hamzacoder53.wavelet.account
 
 import android.content.Context
 import com.metrolist.innertube.YouTube
+import com.metrolist.innertube.models.AlbumItem
 import com.metrolist.innertube.models.Artist
 import com.metrolist.innertube.models.PlaylistItem
 import com.metrolist.innertube.models.SongItem
@@ -26,6 +27,8 @@ data class LibrarySnapshot(
     val playlists: List<LibraryPlaylist> = emptyList(),
     /** Songs the user uploaded to YouTube Music (only synced when "Show uploaded music" is on). */
     val uploads: List<SongItem> = emptyList(),
+    /** Uploaded albums, grouped by YouTube Music from the files' album tags. */
+    val uploadedAlbums: List<LibraryPlaylist> = emptyList(),
     val syncedAt: Long = 0,
 )
 
@@ -105,7 +108,15 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
         }
 
     /** Uploaded songs need a playback hint (InnerTubeX ContentHints.isUploaded) to resolve. */
-    fun isUploaded(mediaId: String): Boolean = _snapshot.value.uploads.any { it.id == mediaId }
+    fun isUploaded(mediaId: String): Boolean =
+        mediaId in uploadedAlbumSongs || _snapshot.value.uploads.any { it.id == mediaId }
+
+    /** Songs of opened uploaded albums, which may lie beyond the capped uploads list. */
+    private val uploadedAlbumSongs: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
+
+    fun rememberUploaded(mediaIds: List<String>) {
+        uploadedAlbumSongs += mediaIds
+    }
 
     private suspend fun syncInnerTube(): LibrarySnapshot {
         val liked = playlistSongs(LIKED_MUSIC_PLAYLIST)
@@ -115,7 +126,8 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
                 .filter { it.id != LIKED_MUSIC_PLAYLIST }
                 .map { LibraryPlaylist(it.id, it.title, it.thumbnail, it.songCountText ?: it.author?.name) }
         val uploads = if (settings.showUploads) uploadedSongs() else emptyList()
-        return LibrarySnapshot(liked, playlists, uploads, System.currentTimeMillis())
+        val uploadedAlbums = if (settings.showUploads) uploadedAlbums() else emptyList()
+        return LibrarySnapshot(liked, playlists, uploads, uploadedAlbums, System.currentTimeMillis())
     }
 
     /** "Uploads" tab of the YouTube Music library (same browse id and tab as Metrolist's sync). */
@@ -161,40 +173,67 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
             }
         }
 
+    /**
+     * "Uploads → Albums" of the YouTube Music library (the browse id Metrolist syncs). A failure here
+     * still lists the uploaded songs, just without albums.
+     */
+    private suspend fun uploadedAlbums(): List<LibraryPlaylist> =
+        runCatching {
+            val page = YouTube.library(UPLOADED_ALBUMS_BROWSE_ID).getOrThrow()
+            val albums = page.items.filterIsInstance<AlbumItem>().toMutableList()
+            var continuation = page.continuation
+            while (continuation != null && albums.size < MAX_UPLOADED_ALBUMS) {
+                val next = YouTube.libraryContinuation(continuation, isUploaded = true).getOrNull() ?: break
+                albums += next.items.filterIsInstance<AlbumItem>()
+                continuation = next.continuation
+            }
+            albums.distinctBy { it.browseId }.take(MAX_UPLOADED_ALBUMS).map {
+                LibraryPlaylist(it.browseId, it.title, it.thumbnail, it.artists?.joinToString { a -> a.name })
+            }
+        }.getOrElse {
+            Timber.w(it, "Uploaded albums sync failed")
+            emptyList()
+        }
+
+    private fun List<LibraryPlaylist>.toPlaylistJson() =
+        JSONArray().apply {
+            forEach { p -> put(JSONObject().put("id", p.id).put("title", p.title).put("thumbnail", p.thumbnail).put("subtitle", p.subtitle)) }
+        }
+
+    private fun JSONArray?.toPlaylists(): List<LibraryPlaylist> =
+        if (this == null) {
+            emptyList()
+        } else {
+            (0 until length()).map { i ->
+                val o = getJSONObject(i)
+                LibraryPlaylist(
+                    o.getString("id"),
+                    o.optString("title"),
+                    o.optString("thumbnail").takeIf { it.isNotEmpty() && it != "null" },
+                    o.optString("subtitle").takeIf { it.isNotEmpty() && it != "null" },
+                )
+            }
+        }
+
     private fun save(snapshot: LibrarySnapshot) {
         val json =
             JSONObject()
                 .put("syncedAt", snapshot.syncedAt)
                 .put("liked", snapshot.likedSongs.toJson())
                 .put("uploads", snapshot.uploads.toJson())
-                .put(
-                    "playlists",
-                    JSONArray().apply {
-                        snapshot.playlists.forEach { p ->
-                            put(JSONObject().put("id", p.id).put("title", p.title).put("thumbnail", p.thumbnail).put("subtitle", p.subtitle))
-                        }
-                    },
-                )
+                .put("uploadedAlbums", snapshot.uploadedAlbums.toPlaylistJson())
+                .put("playlists", snapshot.playlists.toPlaylistJson())
         file.writeText(json.toString())
     }
 
     private fun load(): LibrarySnapshot =
         runCatching {
             val json = JSONObject(file.readText())
-            val playlists = json.getJSONArray("playlists")
             LibrarySnapshot(
                 likedSongs = json.optJSONArray("liked").toSongs(),
                 uploads = json.optJSONArray("uploads").toSongs(),
-                playlists =
-                    (0 until playlists.length()).map { i ->
-                        val o = playlists.getJSONObject(i)
-                        LibraryPlaylist(
-                            o.getString("id"),
-                            o.optString("title"),
-                            o.optString("thumbnail").takeIf { it.isNotEmpty() && it != "null" },
-                            o.optString("subtitle").takeIf { it.isNotEmpty() && it != "null" },
-                        )
-                    },
+                uploadedAlbums = json.optJSONArray("uploadedAlbums").toPlaylists(),
+                playlists = json.getJSONArray("playlists").toPlaylists(),
                 syncedAt = json.optLong("syncedAt"),
             )
         }.getOrDefault(LibrarySnapshot())
@@ -206,6 +245,8 @@ class AccountLibrary(context: Context, private val settings: Settings, private v
         /** Collection id of downloaded liked songs. */
         const val LIKED_COLLECTION_ID = "account:liked"
         private const val UPLOADED_SONGS_BROWSE_ID = "FEmusic_library_privately_owned_tracks"
+        private const val UPLOADED_ALBUMS_BROWSE_ID = "FEmusic_library_privately_owned_releases"
+        private const val MAX_UPLOADED_ALBUMS = 200
         private const val MAX_UPLOADS = 300
     }
 }

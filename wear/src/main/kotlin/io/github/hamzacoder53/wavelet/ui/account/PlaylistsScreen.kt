@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 fun PlaylistsScreen(
     onPlay: (List<SongItem>, Int) -> Unit,
     onOpenPlaylist: (id: String) -> Unit,
+    onOpenAlbum: (browseId: String) -> Unit,
     onSignIn: () -> Unit,
 ) {
     val app = LocalContext.current.applicationContext as WaveletApplication
@@ -44,6 +45,7 @@ fun PlaylistsScreen(
     val scope = rememberCoroutineScope()
     var showUploads by remember { mutableStateOf(app.settings.showUploads) }
     var syncing by remember { mutableStateOf(false) }
+    var showAllUploadedSongs by remember { mutableStateOf(false) }
 
     fun sync() {
         syncing = true
@@ -134,13 +136,35 @@ fun PlaylistsScreen(
                             secondaryLabel = { Text(stringResource(R.string.song_count, snapshot.uploads.size)) },
                         )
                     }
-                    items(snapshot.uploads, key = { "u:" + it.id }) { song ->
+                    items(snapshot.uploadedAlbums, key = { "ua:" + it.id }) { album ->
                         ItemButton(
-                            title = song.title,
-                            subtitle = song.artists.joinToString { it.name },
-                            thumbnail = song.thumbnail,
-                            onClick = { onPlay(snapshot.uploads, snapshot.uploads.indexOf(song)) },
+                            title = album.title,
+                            subtitle = album.subtitle,
+                            thumbnail = album.thumbnail,
+                            onClick = { onOpenAlbum(album.id) },
                         )
+                    }
+                    // With albums shown, the full song list stays folded away.
+                    if (snapshot.uploadedAlbums.isNotEmpty()) {
+                        item {
+                            FilledTonalButton(
+                                onClick = { showAllUploadedSongs = !showAllUploadedSongs },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = {
+                                    Text(stringResource(if (showAllUploadedSongs) R.string.hide_songs else R.string.all_songs))
+                                },
+                            )
+                        }
+                    }
+                    if (snapshot.uploadedAlbums.isEmpty() || showAllUploadedSongs) {
+                        items(snapshot.uploads, key = { "u:" + it.id }) { song ->
+                            ItemButton(
+                                title = song.title,
+                                subtitle = song.artists.joinToString { it.name },
+                                thumbnail = song.thumbnail,
+                                onClick = { onPlay(snapshot.uploads, snapshot.uploads.indexOf(song)) },
+                            )
+                        }
                     }
                 }
             }

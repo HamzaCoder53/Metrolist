@@ -103,7 +103,9 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
   playlists open their page. They're personalised with a full-account sign-in, and hidden while
   offline.
 - **Playlists** (Home → Playlists): your Liked songs and playlists. The **Show uploaded music**
-  switch adds the songs you've uploaded to YouTube Music.
+  switch adds the music you've uploaded to YouTube Music, grouped into albums the way YouTube
+  Music groups them (from your files' album tags). Each album opens with **Play all** and
+  **Download all**; **All songs** shows the full list.
 - **Autoplay:** when the last song in your queue starts, Wavelet adds about 15 similar songs
   (YouTube Music's "up next" for that song). Turn it off in Settings → Playback.
 - **Volume normalization:** turns loud songs down to YouTube's reference level, using each

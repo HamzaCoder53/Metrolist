@@ -52,6 +52,9 @@ class CollectionViewModel(application: Application, savedState: SavedStateHandle
 
     private suspend fun loadAlbum(): CollectionState {
         val page = YouTube.album(id).getOrThrow()
+        if (id.contains(UPLOADED_ALBUM_ID)) {
+            getApplication<WaveletApplication>().accountLibrary.rememberUploaded(page.songs.map { it.id })
+        }
         return CollectionState.Loaded(
             title = page.album.title,
             subtitle = page.album.artists?.joinToString { it.name },
@@ -91,5 +94,6 @@ class CollectionViewModel(application: Application, savedState: SavedStateHandle
         const val KIND_PLAYLIST = "playlist"
         const val KIND_ACCOUNT_PLAYLIST = "account"
         private const val MAX_PLAYLIST_SONGS = 200
+        private const val UPLOADED_ALBUM_ID = "FEmusic_library_privately_owned_release_detail"
     }
 }
