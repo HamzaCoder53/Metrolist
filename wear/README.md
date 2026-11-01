@@ -24,6 +24,10 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 
 - Search by voice or keyboard; results scroll with the crown.
 - Now Playing: play/pause, skip, ±10 s seek and artwork. The crown changes the volume.
+  - **Seek with your finger:** drag along the progress ring at the edge of the screen; the time
+    shows while you drag and playback jumps there when you let go.
+  - **Seek with the crown:** tap the artwork, then turn the crown (5 seconds per step). It goes
+    back to volume after 3 seconds without turning, or when you tap the artwork again.
 - Background playback with a media notification and a Wear OS Ongoing Activity.
 - Plays through Bluetooth headphones by default. Pressing play without them shows a
   "Connect headphones" prompt with **Open Bluetooth** and a **Play on watch speaker** switch;
