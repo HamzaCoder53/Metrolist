@@ -1,1 +1,1 @@
-Fixes Sign in on phone (update the phone app too). New: song options with like, up next, shuffle, repeat and start radio; artist pages; recent searches; downloaded playlists stay in sync; listening history to YouTube.
+Uploaded music plays now (keep the Wavelet phone app installed; it helps the watch play uploads) and is grouped into albums like on YouTube Music.

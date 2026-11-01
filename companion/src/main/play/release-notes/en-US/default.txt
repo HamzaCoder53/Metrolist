@@ -1,1 +1,1 @@
-Fixes "No watch with Wavelet found": the phone app can now find your watch. Update Wavelet on your watch too.
+Helps your watch play your uploaded music. Keep this app installed; it works in the background.

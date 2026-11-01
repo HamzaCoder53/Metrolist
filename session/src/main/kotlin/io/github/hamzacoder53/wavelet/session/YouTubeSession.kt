@@ -54,4 +54,42 @@ object SessionTransfer {
 
     /** Deep link the watch opens on the phone to start sign-in there. */
     const val SIGN_IN_URI = "wavelet://signin"
+
+    /** Watch → phone: [PoTokenRequest.toBytes]. The watch has no WebView to make web PoTokens itself. */
+    const val PATH_POTOKEN_REQUEST = "/wavelet/potoken/request"
+
+    /** Phone → watch: [PoTokenReply.toBytes]. */
+    const val PATH_POTOKEN_REPLY = "/wavelet/potoken/reply"
+}
+
+/** Asks the phone for web PoTokens for [videoId], bound to [sessionId] (the watch's visitor data). */
+data class PoTokenRequest(val id: String, val videoId: String, val sessionId: String) {
+    fun toBytes(): ByteArray =
+        JSONObject().put("id", id).put("videoId", videoId).put("sessionId", sessionId).toString().toByteArray()
+
+    companion object {
+        fun fromBytes(bytes: ByteArray): PoTokenRequest? =
+            runCatching {
+                val json = JSONObject(String(bytes))
+                PoTokenRequest(json.getString("id"), json.getString("videoId"), json.getString("sessionId"))
+            }.getOrNull()
+    }
+}
+
+/** The phone's answer to [PoTokenRequest] [id]; both tokens are null if it couldn't make them. */
+data class PoTokenReply(val id: String, val playerToken: String?, val streamingToken: String?) {
+    fun toBytes(): ByteArray =
+        JSONObject().put("id", id).put("player", playerToken).put("streaming", streamingToken).toString().toByteArray()
+
+    companion object {
+        fun fromBytes(bytes: ByteArray): PoTokenReply? =
+            runCatching {
+                val json = JSONObject(String(bytes))
+                PoTokenReply(
+                    json.getString("id"),
+                    json.optString("player").takeIf { it.isNotEmpty() },
+                    json.optString("streaming").takeIf { it.isNotEmpty() },
+                )
+            }.getOrNull()
+    }
 }

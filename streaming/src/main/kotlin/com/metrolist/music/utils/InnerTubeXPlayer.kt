@@ -174,6 +174,13 @@ object InnerTubeXPlayer {
         AndroidPlayerConfigRepository(requireNotNull(applicationContext) { "InnerTubeXPlayer is not initialized" })
     }
 
+    /**
+     * Web PoTokens for devices without a WebView (e.g. Wear OS watches getting them from a paired phone).
+     * Only asked when the local WebView generator returns nothing.
+     */
+    @Volatile
+    var fallbackPoTokenProvider: (suspend (videoId: String, sessionId: String) -> com.metrolist.music.utils.potoken.PoTokenResult?)? = null
+
     private val poTokenGenerator: PoTokenGenerator by lazy {
         PoTokenGenerator(requireNotNull(applicationContext) { "InnerTubeXPlayer is not initialized" })
     }
@@ -191,7 +198,10 @@ object InnerTubeXPlayer {
                 visitorData: String,
                 cookie: String?,
             ): PoTokenResult? =
-                poTokenGenerator.getWebClientPoToken(videoId, visitorData)?.let { token ->
+                (
+                    poTokenGenerator.getWebClientPoToken(videoId, visitorData)
+                        ?: fallbackPoTokenProvider?.invoke(videoId, visitorData)
+                )?.let { token ->
                     PoTokenResult(
                         playerRequestToken = token.playerRequestPoToken,
                         streamingDataToken = token.streamingDataPoToken,

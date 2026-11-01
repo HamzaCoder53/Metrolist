@@ -28,5 +28,18 @@
                     android:scheme="wavelet" />
             </intent-filter>
         </activity>
+
+        <!-- Makes web PoTokens for the watch so it can stream uploaded songs (SessionTransfer.PATH_POTOKEN_REQUEST). -->
+        <service
+            android:name=".PoTokenService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/wavelet/potoken"
+                    android:scheme="wear" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

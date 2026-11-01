@@ -105,7 +105,10 @@ GPL-3.0, the same license as Metrolist. See [LICENSE](../LICENSE).
 - **Playlists** (Home → Playlists): your Liked songs and playlists. The **Show uploaded music**
   switch adds the music you've uploaded to YouTube Music, grouped into albums the way YouTube
   Music groups them (from your files' album tags). Each album opens with **Play all** and
-  **Download all**; **All songs** shows the full list.
+  **Download all**; **All songs** shows the full list. YouTube only streams uploads to its web
+  clients, which need a token made in a WebView. Most watches have no WebView, so the **Wavelet
+  phone app** makes it in the background: uploads play (and download) while the watch is connected
+  to the phone, and downloaded uploads play anywhere.
 - **Autoplay:** when the last song in your queue starts, Wavelet adds about 15 similar songs
   (YouTube Music's "up next" for that song). Turn it off in Settings → Playback.
 - **Volume normalization:** turns loud songs down to YouTube's reference level, using each

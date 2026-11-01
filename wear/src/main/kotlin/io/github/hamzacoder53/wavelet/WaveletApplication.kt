@@ -12,6 +12,7 @@ import com.metrolist.innertube.YouTube
 import com.metrolist.music.utils.InnerTubeXPlayer
 import io.github.hamzacoder53.wavelet.account.Account
 import io.github.hamzacoder53.wavelet.account.AccountLibrary
+import io.github.hamzacoder53.wavelet.account.PhonePoTokens
 import io.github.hamzacoder53.wavelet.playback.Downloads
 import io.github.hamzacoder53.wavelet.playback.ListeningCache
 import io.github.hamzacoder53.wavelet.playback.Loudness
@@ -76,6 +77,11 @@ class WaveletApplication : Application(), SingletonImageLoader.Factory {
         updateChecker = UpdateChecker(this, settings)
         updateChecker.checkOnAppStart(appScope)
         InnerTubeXPlayer.initialize(this)
+        // Only uploaded songs need web clients (and so PoTokens); other songs never wait for the phone.
+        val phonePoTokens = PhonePoTokens(this)
+        InnerTubeXPlayer.fallbackPoTokenProvider = { videoId, sessionId ->
+            if (accountLibrary.isUploaded(videoId)) phonePoTokens.get(videoId, sessionId) else null
+        }
 
         YouTube.visitorData = settings.visitorData
         account.applySavedSession()

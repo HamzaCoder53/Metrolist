@@ -33,8 +33,8 @@ android {
         applicationId = "io.github.hamzacoder53.wavelet"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1002
-        versionName = "0.6.0"
+        versionCode = 1003
+        versionName = "0.6.1"
     }
 
     buildFeatures {
@@ -66,6 +66,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -89,6 +90,9 @@ play {
 
 dependencies {
     implementation(project(":session"))
+    // PoTokenGenerator, to make web PoTokens for the watch (it has no WebView).
+    implementation(project(":streaming"))
+    coreLibraryDesugaring(libs.desugaring)
     implementation("com.google.android.gms:play-services-wearable:20.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0")
     implementation(libs.activity)
